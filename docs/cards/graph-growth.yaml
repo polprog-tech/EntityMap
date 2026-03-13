@@ -1,0 +1,18 @@
+# EntityMap — Graph Growth Chart Card
+#
+# A history graph showing how your dependency graph grows over time.
+# Tracks both node count and edge count together.
+#
+# How to add:
+#   1. Open your dashboard, click pencil icon (Edit)
+#   2. Click "+ Add Card" > "Manual"
+#   3. Paste this YAML and click "Save"
+
+type: history-graph
+title: "📈 Graph Growth — 7 days"
+hours_to_show: 168
+entities:
+  - entity: sensor.entitymap_total_nodes
+    name: Nodes
+  - entity: sensor.entitymap_total_edges
+    name: Dependencies

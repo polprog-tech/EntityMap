@@ -1,0 +1,104 @@
+# EntityMap — All-in-One Card
+#
+# A single vertical-stack card with everything:
+# status tiles, gauges, history charts, and rescan button.
+# Perfect for a dedicated "Dependency Health" dashboard section.
+#
+# How to add:
+#   1. Open your dashboard, click pencil icon (Edit)
+#   2. Click "+ Add Card" (bottom right)
+#   3. Scroll down, click "Manual" (YAML editor)
+#   4. Paste this YAML and click "Save"
+#
+# Entity IDs below are the canonical IDs created by the integration.
+#
+# Adjust gauge "max" values to fit your installation size.
+
+type: vertical-stack
+cards:
+  # ── Status tiles ──────────────────────────────────────────────
+  - type: grid
+    columns: 4
+    square: false
+    cards:
+      - type: tile
+        entity: sensor.entitymap_total_nodes
+        name: Nodes
+        icon: mdi:graph
+        color: blue
+        vertical: true
+
+      - type: tile
+        entity: sensor.entitymap_total_edges
+        name: Dependencies
+        icon: mdi:vector-polyline
+        color: cyan
+        vertical: true
+
+      - type: tile
+        entity: sensor.entitymap_fragility_issues
+        name: Issues
+        icon: mdi:alert-outline
+        color: orange
+        vertical: true
+
+      - type: tile
+        entity: sensor.entitymap_last_scan
+        name: Last Scan
+        icon: mdi:clock-check-outline
+        color: green
+        vertical: true
+
+  # ── Gauges ────────────────────────────────────────────────────
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+      - type: gauge
+        entity: sensor.entitymap_total_nodes
+        name: "Graph Nodes"
+        min: 0
+        max: 500
+        needle: true
+        severity:
+          green: 0
+          yellow: 200
+          red: 400
+
+      - type: gauge
+        entity: sensor.entitymap_total_edges
+        name: "Dependencies"
+        min: 0
+        max: 1000
+        needle: true
+        severity:
+          green: 0
+          yellow: 400
+          red: 800
+
+  # ── History charts ────────────────────────────────────────────
+  - type: history-graph
+    title: "📈 Graph Growth — 7 days"
+    hours_to_show: 168
+    entities:
+      - entity: sensor.entitymap_total_nodes
+        name: Nodes
+      - entity: sensor.entitymap_total_edges
+        name: Dependencies
+
+  - type: history-graph
+    title: "📊 Fragility Issues — 7 days"
+    hours_to_show: 168
+    entities:
+      - entity: sensor.entitymap_fragility_issues
+        name: Fragility Issues
+
+  # ── Rescan button ─────────────────────────────────────────────
+  - type: button
+    entity: button.entitymap_rescan
+    name: "🔄 Rescan Dependencies"
+    icon: mdi:refresh
+    tap_action:
+      action: toggle
+    show_state: false
+    icon_height: 40px

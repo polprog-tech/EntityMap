@@ -1,0 +1,102 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Konfiguracja EntityMap",
+        "description": "EntityMap analizuje zależności między urządzeniami, encjami, automatyzacjami, skryptami, scenami i pomocnikami w Twoim Home Assistant.",
+        "data": {
+          "scan_on_startup": "Skanuj zależności przy starcie",
+          "auto_refresh": "Automatycznie odświeżaj po wykryciu zmian",
+          "include_templates": "Analizuj odwołania w szablonach (może być wolniejsze)",
+          "include_groups": "Uwzględnij grupy w analizie"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "EntityMap jest już skonfigurowany. Wymagana jest tylko jedna instancja."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opcje EntityMap",
+        "data": {
+          "scan_on_startup": "Skanuj zależności przy starcie",
+          "auto_refresh": "Automatycznie odświeżaj po wykryciu zmian",
+          "scan_interval_hours": "Interwał skanowania uzgadniającego (godziny)",
+          "include_templates": "Analizuj odwołania w szablonach",
+          "include_groups": "Uwzględnij grupy w analizie"
+        }
+      }
+    }
+  },
+  "issues": {
+    "missing_entity_reference": {
+      "title": "Znaleziono brakujące odwołanie do encji",
+      "description": "EntityMap wykrył odwołanie do encji `{entity_id}` w `{source_name}`, ale ta encja nie istnieje. Może to powodować błędy w automatyzacjach lub skryptach."
+    },
+    "missing_device_reference": {
+      "title": "Znaleziono brakujące odwołanie do urządzenia",
+      "description": "EntityMap wykrył odwołanie do urządzenia `{device_name}` w `{source_name}`, ale to urządzenie już nie istnieje."
+    },
+    "scan_failed": {
+      "title": "Skanowanie zależności nie powiodło się",
+      "description": "EntityMap nie mógł zakończyć skanowania zależności: {error}. Niektóre informacje o zależnościach mogą być nieaktualne."
+    },
+    "fragile_device_id_usage": {
+      "title": "Wykryto kruche odwołanie device_id",
+      "description": "EntityMap znalazł {count} automatyzacji używających bezpośrednich odwołań device_id, które mogą przestać działać po ponownym sparowaniu lub wymianie urządzeń. Rozważ użycie wyzwalaczy i warunków opartych na encjach."
+    }
+  },
+  "services": {
+    "scan": {
+      "name": "Skanuj zależności",
+      "description": "Wykonaj pełne skanowanie zależności konfiguracji Home Assistant."
+    },
+    "analyze_impact": {
+      "name": "Analizuj wpływ",
+      "description": "Analizuj wpływ usunięcia, wyłączenia lub zastąpienia określonego węzła.",
+      "fields": {
+        "node_id": {
+          "name": "ID węzła",
+          "description": "ID węzła do analizy (entity_id, device_id itp.)."
+        }
+      }
+    },
+    "get_dependencies": {
+      "name": "Pobierz zależności",
+      "description": "Pobierz wszystkie zależności dla określonego węzła.",
+      "fields": {
+        "node_id": {
+          "name": "ID węzła",
+          "description": "ID węzła do sprawdzenia."
+        },
+        "include_inferred": {
+          "name": "Uwzględnij wnioskowane",
+          "description": "Uwzględnij wnioskowane/heurystyczne zależności."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "total_nodes": {
+        "name": "Łączna liczba węzłów"
+      },
+      "total_edges": {
+        "name": "Łączna liczba krawędzi"
+      },
+      "fragility_issues": {
+        "name": "Problemy kruchości"
+      },
+      "last_scan": {
+        "name": "Ostatnie skanowanie"
+      }
+    },
+    "button": {
+      "rescan": {
+        "name": "Skanuj ponownie"
+      }
+    }
+  }
+}

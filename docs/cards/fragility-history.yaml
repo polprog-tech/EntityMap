@@ -1,0 +1,16 @@
+# EntityMap — Fragility History Chart Card
+#
+# A history graph tracking fragility issue count over time.
+# Helps you see whether your configuration is getting cleaner or more fragile.
+#
+# How to add:
+#   1. Open your dashboard, click pencil icon (Edit)
+#   2. Click "+ Add Card" > "Manual"
+#   3. Paste this YAML and click "Save"
+
+type: history-graph
+title: "📊 Fragility Issues — 7 days"
+hours_to_show: 168
+entities:
+  - entity: sensor.entitymap_fragility_issues
+    name: Fragility Issues

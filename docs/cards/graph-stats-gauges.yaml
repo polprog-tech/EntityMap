@@ -1,0 +1,37 @@
+# EntityMap — Graph Stats Gauges Card
+#
+# Two gauges showing node and dependency counts with color coding.
+# Useful for tracking graph growth over time.
+#
+# How to add:
+#   1. Open your dashboard, click pencil icon (Edit)
+#   2. Click "+ Add Card" > "Manual"
+#   3. Paste this YAML and click "Save"
+#
+# Adjust "max" values to fit your installation size.
+
+type: grid
+columns: 2
+square: false
+cards:
+  - type: gauge
+    entity: sensor.entitymap_total_nodes
+    name: "Graph Nodes"
+    min: 0
+    max: 500
+    needle: true
+    severity:
+      green: 0
+      yellow: 200
+      red: 400
+
+  - type: gauge
+    entity: sensor.entitymap_total_edges
+    name: "Dependencies"
+    min: 0
+    max: 1000
+    needle: true
+    severity:
+      green: 0
+      yellow: 400
+      red: 800

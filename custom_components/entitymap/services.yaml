@@ -1,0 +1,34 @@
+scan:
+  name: Scan dependencies
+  description: Perform a full dependency scan of your Home Assistant configuration.
+
+analyze_impact:
+  name: Analyze impact
+  description: Analyze the impact of removing, disabling, or replacing a specific node.
+  fields:
+    node_id:
+      name: Node ID
+      description: The ID of the node to analyze (entity_id, device_id, etc.).
+      required: true
+      example: "light.living_room"
+      selector:
+        text:
+
+get_dependencies:
+  name: Get dependencies
+  description: Get all dependencies for a specific node.
+  fields:
+    node_id:
+      name: Node ID
+      description: The ID of the node to query.
+      required: true
+      example: "automation.motion_light"
+      selector:
+        text:
+    include_inferred:
+      name: Include inferred
+      description: Include inferred/heuristic dependencies.
+      required: false
+      default: true
+      selector:
+        boolean:

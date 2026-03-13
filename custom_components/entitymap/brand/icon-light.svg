@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="bg-grad-dark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E3F2FD;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#BBDEFB;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="accent-dark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0D47A1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1565C0;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background rounded square (light for dark-mode contexts) -->
+  <rect x="16" y="16" width="480" height="480" rx="96" fill="url(#bg-grad-dark)" />
+
+  <!-- Graph edges -->
+  <g stroke="#0D47A1" stroke-width="4" stroke-opacity="0.3" stroke-linecap="round">
+    <line x1="256" y1="256" x2="160" y2="160" />
+    <line x1="256" y1="256" x2="352" y2="160" />
+    <line x1="256" y1="256" x2="160" y2="352" />
+    <line x1="256" y1="256" x2="352" y2="352" />
+    <line x1="160" y1="160" x2="352" y2="160" />
+    <line x1="160" y1="352" x2="352" y2="352" />
+  </g>
+
+  <!-- Corner nodes -->
+  <circle cx="160" cy="160" r="28" fill="url(#accent-dark)" />
+  <circle cx="352" cy="160" r="28" fill="url(#accent-dark)" />
+  <circle cx="160" cy="352" r="28" fill="url(#accent-dark)" />
+  <circle cx="352" cy="352" r="28" fill="url(#accent-dark)" />
+
+  <!-- Central node -->
+  <circle cx="256" cy="256" r="44" fill="#0D47A1" />
+  <circle cx="256" cy="256" r="30" fill="#E3F2FD" />
+  <circle cx="256" cy="256" r="14" fill="#0D47A1" />
+</svg>

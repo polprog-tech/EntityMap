@@ -1,0 +1,102 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Set up EntityMap",
+        "description": "EntityMap analyzes dependencies between your Home Assistant devices, entities, automations, scripts, scenes, and helpers.",
+        "data": {
+          "scan_on_startup": "Scan dependencies on startup",
+          "auto_refresh": "Automatically refresh when changes are detected",
+          "include_templates": "Analyze template references (may be slower)",
+          "include_groups": "Include groups in analysis"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "EntityMap is already configured. Only one instance is needed."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "EntityMap Options",
+        "data": {
+          "scan_on_startup": "Scan dependencies on startup",
+          "auto_refresh": "Automatically refresh when changes are detected",
+          "scan_interval_hours": "Reconciliation scan interval (hours)",
+          "include_templates": "Analyze template references",
+          "include_groups": "Include groups in analysis"
+        }
+      }
+    }
+  },
+  "issues": {
+    "missing_entity_reference": {
+      "title": "Missing entity reference found",
+      "description": "EntityMap detected a reference to entity `{entity_id}` in `{source_name}`, but this entity does not exist. This may cause errors in your automations or scripts."
+    },
+    "missing_device_reference": {
+      "title": "Missing device reference found",
+      "description": "EntityMap detected a reference to device `{device_name}` in `{source_name}`, but this device no longer exists."
+    },
+    "scan_failed": {
+      "title": "Dependency scan failed",
+      "description": "EntityMap was unable to complete a dependency scan: {error}. Some dependency information may be outdated."
+    },
+    "fragile_device_id_usage": {
+      "title": "Fragile device_id reference detected",
+      "description": "EntityMap found {count} automation(s) using direct device_id references, which may break if devices are re-paired or replaced. Consider using entity-based triggers and conditions instead."
+    }
+  },
+  "services": {
+    "scan": {
+      "name": "Scan dependencies",
+      "description": "Perform a full dependency scan of your Home Assistant configuration."
+    },
+    "analyze_impact": {
+      "name": "Analyze impact",
+      "description": "Analyze the impact of removing, disabling, or replacing a specific node.",
+      "fields": {
+        "node_id": {
+          "name": "Node ID",
+          "description": "The ID of the node to analyze (entity_id, device_id, etc.)."
+        }
+      }
+    },
+    "get_dependencies": {
+      "name": "Get dependencies",
+      "description": "Get all dependencies for a specific node.",
+      "fields": {
+        "node_id": {
+          "name": "Node ID",
+          "description": "The ID of the node to query."
+        },
+        "include_inferred": {
+          "name": "Include inferred",
+          "description": "Include inferred/heuristic dependencies."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "total_nodes": {
+        "name": "Total nodes"
+      },
+      "total_edges": {
+        "name": "Total edges"
+      },
+      "fragility_issues": {
+        "name": "Fragility issues"
+      },
+      "last_scan": {
+        "name": "Last scan"
+      }
+    },
+    "button": {
+      "rescan": {
+        "name": "Rescan"
+      }
+    }
+  }
+}

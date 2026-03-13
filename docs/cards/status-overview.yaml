@@ -1,0 +1,44 @@
+# EntityMap — Status Overview Card
+#
+# Compact row of tiles showing the key dependency graph metrics.
+# Nodes, dependencies, fragility issues, and last scan time at a glance.
+#
+# How to add:
+#   1. Open your dashboard, click pencil icon (Edit)
+#   2. Click "+ Add Card" (bottom right)
+#   3. Scroll down, click "Manual" (YAML editor)
+#   4. Paste this YAML and click "Save"
+#
+# Entity IDs below are the canonical IDs created by the integration.
+
+type: grid
+columns: 4
+square: false
+cards:
+  - type: tile
+    entity: sensor.entitymap_total_nodes
+    name: Nodes
+    icon: mdi:graph
+    color: blue
+    vertical: true
+
+  - type: tile
+    entity: sensor.entitymap_total_edges
+    name: Dependencies
+    icon: mdi:vector-polyline
+    color: cyan
+    vertical: true
+
+  - type: tile
+    entity: sensor.entitymap_fragility_issues
+    name: Issues
+    icon: mdi:alert-outline
+    color: orange
+    vertical: true
+
+  - type: tile
+    entity: sensor.entitymap_last_scan
+    name: Last Scan
+    icon: mdi:clock-check-outline
+    color: green
+    vertical: true
