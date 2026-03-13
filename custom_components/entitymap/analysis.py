@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections import Counter
 
-from .const import Confidence, NodeType, Severity
+from .const import NodeType, Severity
 from .models import (
     DependencyGraph,
     FragilityFinding,
@@ -37,9 +37,7 @@ def analyze_impact(graph: DependencyGraph, node_id: str) -> ImpactReport:
             type_counter[graph.nodes[dep_id].node_type.value] += 1
 
     # Calculate risk score (0-100)
-    risk_score = _calculate_risk_score(
-        graph, node_id, direct_dependents, all_affected
-    )
+    risk_score = _calculate_risk_score(graph, node_id, direct_dependents, all_affected)
 
     # Determine severity
     severity = _risk_to_severity(risk_score)
@@ -50,9 +48,7 @@ def analyze_impact(graph: DependencyGraph, node_id: str) -> ImpactReport:
         label = ntype + "s" if count > 1 else ntype
         parts.append(f"{count} {label}")
     affected_summary = ", ".join(parts) if parts else "no objects"
-    summary = (
-        f"Removing or replacing '{node.title}' may affect {affected_summary}."
-    )
+    summary = f"Removing or replacing '{node.title}' may affect {affected_summary}."
 
     # Fragility findings for this node
     findings = _get_node_findings(graph, node_id)
@@ -98,9 +94,7 @@ def _calculate_risk_score(
 
     # Device ID references (fragile)
     inbound = graph.get_inbound(node_id)
-    device_trigger_count = sum(
-        1 for e in inbound if "device" in e.dependency_kind.value
-    )
+    device_trigger_count = sum(1 for e in inbound if "device" in e.dependency_kind.value)
     score += min(device_trigger_count * 5, 20)
 
     return min(score, 100.0)
@@ -119,19 +113,13 @@ def _risk_to_severity(risk_score: float) -> Severity:
     return Severity.INFO
 
 
-def _get_node_findings(
-    graph: DependencyGraph, node_id: str
-) -> list[FragilityFinding]:
+def _get_node_findings(graph: DependencyGraph, node_id: str) -> list[FragilityFinding]:
     """Get fragility findings related to a specific node."""
     # Import here to avoid circular dependency
     from .fragility import detect_fragility
 
     all_findings = detect_fragility(graph)
-    return [
-        f
-        for f in all_findings
-        if f.node_id == node_id or node_id in f.related_node_ids
-    ]
+    return [f for f in all_findings if f.node_id == node_id or node_id in f.related_node_ids]
 
 
 def _get_migration_suggestions(
@@ -170,8 +158,7 @@ def _get_migration_suggestions(
     auto_deps = [
         e.source
         for e in inbound
-        if graph.nodes.get(e.source)
-        and graph.nodes[e.source].node_type == NodeType.AUTOMATION
+        if graph.nodes.get(e.source) and graph.nodes[e.source].node_type == NodeType.AUTOMATION
     ]
     if auto_deps:
         suggestions.append(
@@ -193,8 +180,7 @@ def _get_migration_suggestions(
         device_entities = [
             e.source
             for e in graph.get_inbound(node_id)
-            if graph.nodes.get(e.source)
-            and graph.nodes[e.source].node_type == NodeType.ENTITY
+            if graph.nodes.get(e.source) and graph.nodes[e.source].node_type == NodeType.ENTITY
         ]
         if device_entities:
             suggestions.append(

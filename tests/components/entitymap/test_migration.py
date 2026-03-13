@@ -7,8 +7,6 @@ device replacement, scene/group members, and target-specified migrations.
 
 from __future__ import annotations
 
-import pytest
-
 from custom_components.entitymap.const import DependencyKind, NodeType
 from custom_components.entitymap.migration import get_migration_report
 from custom_components.entitymap.models import (
@@ -88,10 +86,16 @@ class TestMigrationForDeviceReplacement:
         """GIVEN a device with device_id references from automations."""
         graph = DependencyGraph()
         graph.add_node(GraphNode("device.sensor1", NodeType.DEVICE, "Sensor 1"))
-        graph.add_node(GraphNode("binary_sensor.motion", NodeType.ENTITY, "Motion", device_id="sensor1"))
+        graph.add_node(
+            GraphNode("binary_sensor.motion", NodeType.ENTITY, "Motion", device_id="sensor1")
+        )
         graph.add_node(GraphNode("automation.test", NodeType.AUTOMATION, "Test"))
-        graph.add_edge(GraphEdge("binary_sensor.motion", "device.sensor1", DependencyKind.ENTITY_OF_DEVICE))
-        graph.add_edge(GraphEdge("automation.test", "device.sensor1", DependencyKind.DEVICE_TRIGGER))
+        graph.add_edge(
+            GraphEdge("binary_sensor.motion", "device.sensor1", DependencyKind.ENTITY_OF_DEVICE)
+        )
+        graph.add_edge(
+            GraphEdge("automation.test", "device.sensor1", DependencyKind.DEVICE_TRIGGER)
+        )
 
         """WHEN requesting migration."""
         result = get_migration_report(graph, "device.sensor1")

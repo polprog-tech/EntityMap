@@ -6,7 +6,7 @@ and privacy (no raw entity IDs leaked).
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -15,7 +15,7 @@ from custom_components.entitymap.diagnostics import (
     async_get_config_entry_diagnostics,
 )
 from custom_components.entitymap.graph import GraphBuilder
-from custom_components.entitymap.models import DependencyGraph, GraphEdge, GraphNode
+from custom_components.entitymap.models import GraphEdge, GraphNode
 
 
 class TestDiagnosticsOutput:
@@ -66,9 +66,7 @@ class TestDiagnosticsPrivacy:
     """Scenarios verifying diagnostics do not leak sensitive data."""
 
     @pytest.mark.asyncio
-    async def test_empty_graph_diagnostics_do_not_leak(
-        self, mock_hass, mock_config_entry
-    ):
+    async def test_empty_graph_diagnostics_do_not_leak(self, mock_hass, mock_config_entry):
         """GIVEN an empty graph."""
         builder = GraphBuilder(mock_hass, mock_config_entry)
         runtime_data = MagicMock()

@@ -23,7 +23,6 @@ from .const import (
     DOMAIN,
     PANEL_ICON,
     PANEL_TITLE,
-    PANEL_URL,
 )
 from .graph import GraphBuilder
 
@@ -45,9 +44,7 @@ class EntityMapRuntimeData:
 type EntityMapConfigEntry = ConfigEntry[EntityMapRuntimeData]
 
 
-async def async_setup_entry(
-    hass: HomeAssistant, entry: EntityMapConfigEntry
-) -> bool:
+async def async_setup_entry(hass: HomeAssistant, entry: EntityMapConfigEntry) -> bool:
     """Set up EntityMap from a config entry."""
     from .panel import EntityMapPanelView
     from .services import async_register_services
@@ -87,6 +84,7 @@ async def async_setup_entry(
     # Schedule initial scan
     options = entry.options
     if options.get(CONF_SCAN_ON_STARTUP, DEFAULT_SCAN_ON_STARTUP):
+
         async def _startup_scan(_event: Event) -> None:
             """Run initial scan after HA is fully started."""
             await builder.async_build()
@@ -99,6 +97,7 @@ async def async_setup_entry(
 
     # Auto-refresh on registry changes
     if options.get(CONF_AUTO_REFRESH, DEFAULT_AUTO_REFRESH):
+
         @callback
         def _handle_registry_change(_event: Event) -> None:
             """Schedule a rescan when registries change."""
@@ -108,14 +107,10 @@ async def async_setup_entry(
             "entity_registry_updated",
             "device_registry_updated",
         ):
-            unsub_listeners.append(
-                hass.bus.async_listen(event_type, _handle_registry_change)
-            )
+            unsub_listeners.append(hass.bus.async_listen(event_type, _handle_registry_change))
 
     # Periodic reconciliation scan
-    scan_interval = options.get(
-        CONF_SCAN_INTERVAL_HOURS, DEFAULT_SCAN_INTERVAL_HOURS
-    )
+    scan_interval = options.get(CONF_SCAN_INTERVAL_HOURS, DEFAULT_SCAN_INTERVAL_HOURS)
 
     async def _periodic_scan(_now: Any) -> None:
         """Periodic reconciliation scan."""
@@ -135,16 +130,12 @@ async def async_setup_entry(
     return True
 
 
-async def _async_update_options(
-    hass: HomeAssistant, entry: EntityMapConfigEntry
-) -> None:
+async def _async_update_options(hass: HomeAssistant, entry: EntityMapConfigEntry) -> None:
     """Handle options update — reload the integration."""
     await hass.config_entries.async_reload(entry.entry_id)
 
 
-async def async_unload_entry(
-    hass: HomeAssistant, entry: EntityMapConfigEntry
-) -> bool:
+async def async_unload_entry(hass: HomeAssistant, entry: EntityMapConfigEntry) -> bool:
     """Unload a config entry."""
     from homeassistant.components import frontend
 
@@ -189,9 +180,7 @@ async def _async_register_panel(hass: HomeAssistant) -> None:
     )
 
 
-async def _async_create_repair_issues(
-    hass: HomeAssistant, builder: GraphBuilder
-) -> None:
+async def _async_create_repair_issues(hass: HomeAssistant, builder: GraphBuilder) -> None:
     """Create repair issues for critical fragility findings."""
     from homeassistant.helpers import issue_registry as ir
 
@@ -202,9 +191,7 @@ async def _async_create_repair_issues(
 
     # Count device_id references
     device_id_count = sum(
-        1
-        for f in findings
-        if f.fragility_type == FragilityType.DEVICE_ID_REFERENCE
+        1 for f in findings if f.fragility_type == FragilityType.DEVICE_ID_REFERENCE
     )
     if device_id_count > 0:
         ir.async_create_issue(
@@ -218,11 +205,7 @@ async def _async_create_repair_issues(
         )
 
     # Missing entity references
-    missing_refs = [
-        f
-        for f in findings
-        if f.fragility_type == FragilityType.MISSING_ENTITY
-    ]
+    missing_refs = [f for f in findings if f.fragility_type == FragilityType.MISSING_ENTITY]
     for finding in missing_refs[:5]:  # Limit to 5 repair issues
         related = finding.related_node_ids[0] if finding.related_node_ids else "unknown"
         ir.async_create_issue(
@@ -256,9 +239,7 @@ def _register_websocket_commands(hass: HomeAssistant) -> None:
     from .analysis import analyze_impact
     from .fragility import detect_fragility
 
-    @websocket_api.websocket_command(
-        {vol.Required("type"): "entitymap/graph"}
-    )
+    @websocket_api.websocket_command({vol.Required("type"): "entitymap/graph"})
     @websocket_api.async_response
     async def ws_get_graph(
         hass: HomeAssistant,
@@ -318,9 +299,7 @@ def _register_websocket_commands(hass: HomeAssistant) -> None:
             {"nodes": nodes, "edges": [e.as_dict() for e in edges]},
         )
 
-    @websocket_api.websocket_command(
-        {vol.Required("type"): "entitymap/scan"}
-    )
+    @websocket_api.websocket_command({vol.Required("type"): "entitymap/scan"})
     @websocket_api.async_response
     async def ws_scan(
         hass: HomeAssistant,
@@ -338,9 +317,7 @@ def _register_websocket_commands(hass: HomeAssistant) -> None:
             {"node_count": graph.node_count, "edge_count": graph.edge_count},
         )
 
-    @websocket_api.websocket_command(
-        {vol.Required("type"): "entitymap/findings"}
-    )
+    @websocket_api.websocket_command({vol.Required("type"): "entitymap/findings"})
     @websocket_api.async_response
     async def ws_get_findings(
         hass: HomeAssistant,
@@ -378,17 +355,13 @@ def _register_websocket_commands(hass: HomeAssistant) -> None:
         if not builder:
             connection.send_error(msg["id"], "not_loaded", "EntityMap not loaded")
             return
-        suggestions = get_migration_report(
-            builder.graph, msg["node_id"], msg.get("target_node_id")
-        )
+        suggestions = get_migration_report(builder.graph, msg["node_id"], msg.get("target_node_id"))
         connection.send_result(
             msg["id"],
             {"suggestions": [s.as_dict() for s in suggestions]},
         )
 
-    @websocket_api.websocket_command(
-        {vol.Required("type"): "entitymap/hierarchy"}
-    )
+    @websocket_api.websocket_command({vol.Required("type"): "entitymap/hierarchy"})
     @websocket_api.async_response
     async def ws_get_hierarchy(
         hass: HomeAssistant,
@@ -418,7 +391,8 @@ def _get_builder(hass: HomeAssistant) -> GraphBuilder | None:
         return None
     entry = entries[0]
     if hasattr(entry, "runtime_data") and entry.runtime_data:
-        return entry.runtime_data.builder
+        builder: GraphBuilder = entry.runtime_data.builder
+        return builder
     return None
 
 
@@ -502,8 +476,10 @@ def _build_hierarchy(graph: Any) -> dict[str, Any]:
         area["entities"] = entities_by_area.get(area_id, [])
         # Counts
         area["device_count"] = len(area["devices"])
-        area["entity_count"] = area["device_count"] + len(area["entities"]) + sum(
-            len(d["entities"]) for d in area["devices"]
+        area["entity_count"] = (
+            area["device_count"]
+            + len(area["entities"])
+            + sum(len(d["entities"]) for d in area["devices"])
         )
         result_areas.append(area)
 

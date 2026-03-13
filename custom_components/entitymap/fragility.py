@@ -6,7 +6,6 @@ import hashlib
 from collections import Counter
 
 from .const import (
-    Confidence,
     DependencyKind,
     FragilityType,
     NodeType,
@@ -52,13 +51,14 @@ def _detect_missing_references(graph: DependencyGraph) -> list[FragilityFinding]
                     ),
                 )
             )
-        elif not target_node.available and target_node.node_type not in (
-            NodeType.AREA,
+        elif (
+            not target_node.available
+            and target_node.node_type not in (NodeType.AREA,)
+            and (not target_node.entity_id or not graph.nodes.get(target_node.entity_id))
         ):
             # Node exists but is marked unavailable by registry adapter
             # Only flag if it was not also found in entity registry (truly missing)
-            if not target_node.entity_id or not graph.nodes.get(target_node.entity_id):
-                pass  # Already a proper node, just currently unavailable
+            pass  # Already a proper node, just currently unavailable
     return findings
 
 
@@ -112,12 +112,9 @@ def _detect_disabled_references(graph: DependencyGraph) -> list[FragilityFinding
                     node_id=edge.source,
                     related_node_ids=(edge.target,),
                     rationale=(
-                        f"'{edge.source}' references '{edge.target}' "
-                        "which is currently disabled."
+                        f"'{edge.source}' references '{edge.target}' which is currently disabled."
                     ),
-                    remediation=(
-                        "Enable the referenced entity or remove the reference."
-                    ),
+                    remediation=("Enable the referenced entity or remove the reference."),
                 )
             )
     return findings
@@ -147,9 +144,7 @@ def _detect_unavailable_references(
                         f"'{edge.source}' references '{edge.target}' "
                         "which is currently unavailable."
                     ),
-                    remediation=(
-                        "Check if the entity's integration is working properly."
-                    ),
+                    remediation=("Check if the entity's integration is working properly."),
                 )
             )
     return findings
@@ -171,9 +166,7 @@ def _detect_tight_device_coupling(
         if edge.dependency_kind in device_ref_kinds:
             source_node = graph.nodes.get(edge.source)
             if source_node and source_node.node_type == NodeType.AUTOMATION:
-                auto_device_refs.setdefault(edge.source, Counter())[
-                    edge.target
-                ] += 1
+                auto_device_refs.setdefault(edge.source, Counter())[edge.target] += 1
 
     for auto_id, device_counts in auto_device_refs.items():
         for device_id, count in device_counts.items():
@@ -220,9 +213,7 @@ def _detect_hidden_dependencies(
                 if len(script_deps) > 2:
                     findings.append(
                         FragilityFinding(
-                            finding_id=_make_id(
-                                "hidden", edge.source, edge.target
-                            ),
+                            finding_id=_make_id("hidden", edge.source, edge.target),
                             fragility_type=FragilityType.HIDDEN_DEPENDENCY,
                             severity=Severity.INFO,
                             node_id=edge.source,
@@ -235,8 +226,7 @@ def _detect_hidden_dependencies(
                                 "automation indirectly."
                             ),
                             remediation=(
-                                "Review the called script to understand the "
-                                "full dependency chain."
+                                "Review the called script to understand the full dependency chain."
                             ),
                         )
                     )

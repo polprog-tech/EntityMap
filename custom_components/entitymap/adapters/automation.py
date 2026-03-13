@@ -14,9 +14,7 @@ from .base import SourceAdapter
 
 _LOGGER = logging.getLogger(__name__)
 
-ENTITY_ID_PATTERN = re.compile(
-    r"\b([a-z_]+\.[a-z0-9_]+)\b"
-)
+ENTITY_ID_PATTERN = re.compile(r"\b([a-z_]+\.[a-z0-9_]+)\b")
 
 
 class AutomationAdapter(SourceAdapter):
@@ -72,9 +70,7 @@ class AutomationAdapter(SourceAdapter):
             self._process_trigger(graph, auto_entity_id, trigger)
 
         # Conditions
-        for condition in _as_list(
-            config.get("condition", config.get("conditions", []))
-        ):
+        for condition in _as_list(config.get("condition", config.get("conditions", []))):
             self._process_condition(graph, auto_entity_id, condition)
 
         # Actions
@@ -302,9 +298,7 @@ class AutomationAdapter(SourceAdapter):
                 self._process_action(graph, auto_entity_id, sub)
 
     @staticmethod
-    def _ensure_placeholder(
-        graph: DependencyGraph, node_id: str, node_type: NodeType
-    ) -> None:
+    def _ensure_placeholder(graph: DependencyGraph, node_id: str, node_type: NodeType) -> None:
         """Ensure a node exists in the graph (placeholder if not from registry)."""
         if node_id not in graph.nodes:
             graph.add_node(

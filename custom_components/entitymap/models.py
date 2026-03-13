@@ -186,9 +186,7 @@ class DependencyGraph:
                     stack.append(dep)
         return visited
 
-    def get_neighborhood(
-        self, node_id: str, depth: int = 1
-    ) -> tuple[set[str], list[GraphEdge]]:
+    def get_neighborhood(self, node_id: str, depth: int = 1) -> tuple[set[str], list[GraphEdge]]:
         """Get nodes and edges within N hops of the given node."""
         visited: set[str] = {node_id}
         edge_set: set[tuple[str, str, str]] = set()

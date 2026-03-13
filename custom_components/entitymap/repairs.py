@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from homeassistant import data_entry_flow
 from homeassistant.components.repairs import ConfirmRepairFlow, RepairsFlow
 from homeassistant.core import HomeAssistant
 

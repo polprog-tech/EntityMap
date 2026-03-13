@@ -5,7 +5,6 @@ from __future__ import annotations
 import logging
 import re
 
-from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 
 from ..const import Confidence, DependencyKind, NodeType
@@ -71,9 +70,7 @@ class TemplateAdapter(SourceAdapter):
             template_data = self.hass.data.get("template")
             if template_data and hasattr(template_data, "async_items"):
                 for item in template_data.async_items():
-                    config = (
-                        item.as_dict() if hasattr(item, "as_dict") else item
-                    )
+                    config = item.as_dict() if hasattr(item, "as_dict") else item
                     config_str = str(config)
                     for pattern in TEMPLATE_ENTITY_PATTERNS:
                         refs.update(pattern.findall(config_str))

@@ -6,11 +6,8 @@ dependents, devices, helpers, isolated nodes, and report quality.
 
 from __future__ import annotations
 
-import pytest
-
 from custom_components.entitymap.analysis import analyze_impact
 from custom_components.entitymap.const import (
-    Confidence,
     DependencyKind,
     NodeType,
     Severity,
@@ -36,12 +33,37 @@ def _build_realistic_graph() -> DependencyGraph:
 
     # Devices
     graph.add_node(GraphNode("device.motion", NodeType.DEVICE, "Motion Sensor", device_id="motion"))
-    graph.add_node(GraphNode("device.light_hw", NodeType.DEVICE, "Light Hardware", device_id="light_hw"))
+    graph.add_node(
+        GraphNode("device.light_hw", NodeType.DEVICE, "Light Hardware", device_id="light_hw")
+    )
 
     # Entities
-    graph.add_node(GraphNode("binary_sensor.motion", NodeType.ENTITY, "Motion", entity_id="binary_sensor.motion", device_id="motion"))
-    graph.add_node(GraphNode("light.living_room", NodeType.ENTITY, "Living Room Light", entity_id="light.living_room", device_id="light_hw"))
-    graph.add_node(GraphNode("input_boolean.guest_mode", NodeType.HELPER, "Guest Mode", entity_id="input_boolean.guest_mode"))
+    graph.add_node(
+        GraphNode(
+            "binary_sensor.motion",
+            NodeType.ENTITY,
+            "Motion",
+            entity_id="binary_sensor.motion",
+            device_id="motion",
+        )
+    )
+    graph.add_node(
+        GraphNode(
+            "light.living_room",
+            NodeType.ENTITY,
+            "Living Room Light",
+            entity_id="light.living_room",
+            device_id="light_hw",
+        )
+    )
+    graph.add_node(
+        GraphNode(
+            "input_boolean.guest_mode",
+            NodeType.HELPER,
+            "Guest Mode",
+            entity_id="input_boolean.guest_mode",
+        )
+    )
 
     # Automations
     graph.add_node(GraphNode("automation.motion_light", NodeType.AUTOMATION, "Motion Light"))
@@ -51,17 +73,29 @@ def _build_realistic_graph() -> DependencyGraph:
     graph.add_node(GraphNode("script.dim_lights", NodeType.SCRIPT, "Dim Lights"))
 
     # Entity → Device edges
-    graph.add_edge(GraphEdge("binary_sensor.motion", "device.motion", DependencyKind.ENTITY_OF_DEVICE))
-    graph.add_edge(GraphEdge("light.living_room", "device.light_hw", DependencyKind.ENTITY_OF_DEVICE))
+    graph.add_edge(
+        GraphEdge("binary_sensor.motion", "device.motion", DependencyKind.ENTITY_OF_DEVICE)
+    )
+    graph.add_edge(
+        GraphEdge("light.living_room", "device.light_hw", DependencyKind.ENTITY_OF_DEVICE)
+    )
 
     # Automation → entity/device edges
-    graph.add_edge(GraphEdge("automation.motion_light", "binary_sensor.motion", DependencyKind.TRIGGER))
+    graph.add_edge(
+        GraphEdge("automation.motion_light", "binary_sensor.motion", DependencyKind.TRIGGER)
+    )
     graph.add_edge(GraphEdge("automation.motion_light", "light.living_room", DependencyKind.ACTION))
-    graph.add_edge(GraphEdge("automation.motion_light", "device.motion", DependencyKind.DEVICE_TRIGGER))
-    graph.add_edge(GraphEdge("automation.motion_light", "input_boolean.guest_mode", DependencyKind.CONDITION))
+    graph.add_edge(
+        GraphEdge("automation.motion_light", "device.motion", DependencyKind.DEVICE_TRIGGER)
+    )
+    graph.add_edge(
+        GraphEdge("automation.motion_light", "input_boolean.guest_mode", DependencyKind.CONDITION)
+    )
 
     # Night mode chain
-    graph.add_edge(GraphEdge("automation.night_mode", "script.dim_lights", DependencyKind.SERVICE_CALL))
+    graph.add_edge(
+        GraphEdge("automation.night_mode", "script.dim_lights", DependencyKind.SERVICE_CALL)
+    )
     graph.add_edge(GraphEdge("script.dim_lights", "light.living_room", DependencyKind.ACTION))
 
     return graph

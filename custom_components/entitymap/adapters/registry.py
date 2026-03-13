@@ -7,7 +7,11 @@ import logging
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import (
     area_registry as ar,
+)
+from homeassistant.helpers import (
     device_registry as dr,
+)
+from homeassistant.helpers import (
     entity_registry as er,
 )
 
@@ -63,11 +67,7 @@ class RegistryAdapter(SourceAdapter):
                 GraphNode(
                     node_id=device_node_id,
                     node_type=NodeType.DEVICE,
-                    title=(
-                        device.name_by_user
-                        or device.name
-                        or device.id
-                    ),
+                    title=(device.name_by_user or device.name or device.id),
                     device_id=device.id,
                     area_id=device.area_id,
                     disabled=device.disabled_by is not None,
@@ -105,11 +105,7 @@ class RegistryAdapter(SourceAdapter):
                 GraphNode(
                     node_id=entry.entity_id,
                     node_type=node_type,
-                    title=(
-                        entry.name
-                        or entry.original_name
-                        or entry.entity_id
-                    ),
+                    title=(entry.name or entry.original_name or entry.entity_id),
                     entity_id=entry.entity_id,
                     device_id=entry.device_id,
                     area_id=entry.area_id,

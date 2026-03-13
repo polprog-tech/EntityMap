@@ -3,10 +3,8 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
 
 import voluptuous as vol
-
 from homeassistant.core import HomeAssistant, ServiceCall, ServiceResponse, SupportsResponse
 
 from .analysis import analyze_impact
@@ -24,9 +22,7 @@ from .graph import GraphBuilder
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_register_services(
-    hass: HomeAssistant, builder: GraphBuilder
-) -> None:
+async def async_register_services(hass: HomeAssistant, builder: GraphBuilder) -> None:
     """Register EntityMap services."""
 
     async def handle_scan(call: ServiceCall) -> ServiceResponse:
@@ -61,12 +57,8 @@ async def async_register_services(
         outbound_edges = graph.get_outbound(node_id)
 
         if not include_inferred:
-            inbound_edges = [
-                e for e in inbound_edges if e.confidence != Confidence.LOW
-            ]
-            outbound_edges = [
-                e for e in outbound_edges if e.confidence != Confidence.LOW
-            ]
+            inbound_edges = [e for e in inbound_edges if e.confidence != Confidence.LOW]
+            outbound_edges = [e for e in outbound_edges if e.confidence != Confidence.LOW]
 
         return {
             "node_id": node_id,

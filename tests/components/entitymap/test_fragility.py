@@ -6,10 +6,7 @@ happy-path (clean graph), each fragility type, and edge cases.
 
 from __future__ import annotations
 
-import pytest
-
 from custom_components.entitymap.const import (
-    Confidence,
     DependencyKind,
     FragilityType,
     NodeType,
@@ -50,7 +47,8 @@ class TestCleanGraph:
             f for f in findings if f.fragility_type == FragilityType.DEVICE_ID_REFERENCE
         ]
         missing_findings = [
-            f for f in findings
+            f
+            for f in findings
             if f.fragility_type in (FragilityType.MISSING_ENTITY, FragilityType.MISSING_DEVICE)
         ]
         assert len(device_id_findings) == 0
@@ -115,7 +113,9 @@ class TestDeviceIdUsage:
         graph = DependencyGraph()
         graph.add_node(GraphNode("automation.test", NodeType.AUTOMATION, "Test Auto"))
         graph.add_node(GraphNode("device.sensor1", NodeType.DEVICE, "Sensor"))
-        graph.add_edge(GraphEdge("automation.test", "device.sensor1", DependencyKind.DEVICE_TRIGGER))
+        graph.add_edge(
+            GraphEdge("automation.test", "device.sensor1", DependencyKind.DEVICE_TRIGGER)
+        )
 
         """WHEN detecting fragility."""
         findings = detect_fragility(graph)
@@ -147,9 +147,14 @@ class TestDisabledReference:
         """GIVEN an automation referencing a disabled entity."""
         graph = DependencyGraph()
         graph.add_node(GraphNode("automation.test", NodeType.AUTOMATION, "Test"))
-        graph.add_node(GraphNode(
-            "light.disabled_light", NodeType.ENTITY, "Disabled Light", disabled=True,
-        ))
+        graph.add_node(
+            GraphNode(
+                "light.disabled_light",
+                NodeType.ENTITY,
+                "Disabled Light",
+                disabled=True,
+            )
+        )
         graph.add_edge(GraphEdge("automation.test", "light.disabled_light", DependencyKind.ACTION))
 
         """WHEN detecting fragility."""
@@ -202,8 +207,12 @@ class TestTightDeviceCoupling:
         graph = DependencyGraph()
         graph.add_node(GraphNode("automation.test", NodeType.AUTOMATION, "Test"))
         graph.add_node(GraphNode("device.sensor1", NodeType.DEVICE, "Sensor"))
-        graph.add_edge(GraphEdge("automation.test", "device.sensor1", DependencyKind.DEVICE_TRIGGER))
-        graph.add_edge(GraphEdge("automation.test", "device.sensor1", DependencyKind.DEVICE_CONDITION))
+        graph.add_edge(
+            GraphEdge("automation.test", "device.sensor1", DependencyKind.DEVICE_TRIGGER)
+        )
+        graph.add_edge(
+            GraphEdge("automation.test", "device.sensor1", DependencyKind.DEVICE_CONDITION)
+        )
 
         """WHEN detecting fragility."""
         findings = detect_fragility(graph)
@@ -259,6 +268,7 @@ class TestFindingIdStability:
 
     def test_same_inputs_produce_same_finding_id(self):
         """GIVEN two identical graphs with the same missing reference."""
+
         def _make_graph():
             g = DependencyGraph()
             g.add_node(GraphNode("automation.x", NodeType.AUTOMATION, "X"))

@@ -139,8 +139,8 @@ class ScriptAdapter(SourceAdapter):
             )
 
         # Template references in data values
-        for value in (data.values() if isinstance(data, dict) else []):
-            if isinstance(value, str) and "{%" in value or "{{" in str(value):
+        for value in data.values() if isinstance(data, dict) else []:
+            if (isinstance(value, str) and "{%" in value) or "{{" in str(value):
                 for ref in _extract_template_refs(str(value)):
                     self._ensure_node(graph, ref, NodeType.ENTITY)
                     graph.add_edge(
@@ -170,9 +170,7 @@ class ScriptAdapter(SourceAdapter):
                 self._process_action(graph, script_entity_id, sub)
 
     @staticmethod
-    def _ensure_node(
-        graph: DependencyGraph, node_id: str, node_type: NodeType
-    ) -> None:
+    def _ensure_node(graph: DependencyGraph, node_id: str, node_type: NodeType) -> None:
         """Ensure a node exists in the graph."""
         if node_id not in graph.nodes:
             graph.add_node(

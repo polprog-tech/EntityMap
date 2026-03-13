@@ -20,9 +20,7 @@ from custom_components.entitymap.const import (
     CONF_INCLUDE_TEMPLATES,
     CONF_SCAN_INTERVAL_HOURS,
     CONF_SCAN_ON_STARTUP,
-    DOMAIN,
 )
-
 
 # ── Config Flow ─────────────────────────────────────────────────────
 
@@ -111,7 +109,9 @@ class TestOptionsFlowInit:
         # Patch config_entry since OptionsFlow has a property setter that
         # requires the HA frame helper to be set up.
         with patch.object(
-            type(flow), "config_entry", new_callable=lambda: property(lambda self: mock_config_entry)
+            type(flow),
+            "config_entry",
+            new_callable=lambda: property(lambda self: mock_config_entry),
         ):
             yield flow
 

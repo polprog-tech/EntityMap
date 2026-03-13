@@ -6,7 +6,7 @@ concurrent scan protection, and serialization.
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -48,13 +48,11 @@ class TestGraphBuilderBuild:
         """GIVEN an empty builder."""
 
         """WHEN a build completes."""
-        with patch(
-            "custom_components.entitymap.adapters.registry.ar"
-        ) as mock_ar, patch(
-            "custom_components.entitymap.adapters.registry.dr"
-        ) as mock_dr, patch(
-            "custom_components.entitymap.adapters.registry.er"
-        ) as mock_er:
+        with (
+            patch("custom_components.entitymap.adapters.registry.ar") as mock_ar,
+            patch("custom_components.entitymap.adapters.registry.dr") as mock_dr,
+            patch("custom_components.entitymap.adapters.registry.er") as mock_er,
+        ):
             mock_ar.async_get.return_value.async_list_areas.return_value = []
             mock_dr.async_get.return_value.devices = {}
             mock_er.async_get.return_value.entities = {}
@@ -70,13 +68,11 @@ class TestGraphBuilderBuild:
         """GIVEN a builder with a mocked hass."""
 
         """WHEN a build completes."""
-        with patch(
-            "custom_components.entitymap.adapters.registry.ar"
-        ) as mock_ar, patch(
-            "custom_components.entitymap.adapters.registry.dr"
-        ) as mock_dr, patch(
-            "custom_components.entitymap.adapters.registry.er"
-        ) as mock_er:
+        with (
+            patch("custom_components.entitymap.adapters.registry.ar") as mock_ar,
+            patch("custom_components.entitymap.adapters.registry.dr") as mock_dr,
+            patch("custom_components.entitymap.adapters.registry.er") as mock_er,
+        ):
             mock_ar.async_get.return_value.async_list_areas.return_value = []
             mock_dr.async_get.return_value.devices = {}
             mock_er.async_get.return_value.entities = {}
@@ -84,9 +80,7 @@ class TestGraphBuilderBuild:
             await builder.async_build()
 
         """THEN scan_started, scan_completed, and graph_updated events are fired."""
-        event_names = [
-            call[0][0] for call in mock_hass.bus.async_fire.call_args_list
-        ]
+        event_names = [call[0][0] for call in mock_hass.bus.async_fire.call_args_list]
         assert "entitymap_scan_started" in event_names
         assert "entitymap_scan_completed" in event_names
         assert "entitymap_graph_updated" in event_names

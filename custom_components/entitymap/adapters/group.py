@@ -3,9 +3,6 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
-
-from homeassistant.core import HomeAssistant
 
 from ..const import Confidence, DependencyKind, NodeType
 from ..models import DependencyGraph, GraphEdge, GraphNode
@@ -30,9 +27,7 @@ class GroupAdapter(SourceAdapter):
                     GraphNode(
                         node_id=group_entity_id,
                         node_type=NodeType.GROUP,
-                        title=state.attributes.get(
-                            "friendly_name", group_entity_id
-                        ),
+                        title=state.attributes.get("friendly_name", group_entity_id),
                         entity_id=group_entity_id,
                     )
                 )

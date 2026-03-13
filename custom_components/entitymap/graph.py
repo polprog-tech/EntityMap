@@ -4,12 +4,13 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 from homeassistant.core import HomeAssistant
 
 from .adapters.automation import AutomationAdapter
+from .adapters.base import SourceAdapter
 from .adapters.group import GroupAdapter
 from .adapters.registry import RegistryAdapter
 from .adapters.scene import SceneAdapter
@@ -65,7 +66,7 @@ class GraphBuilder:
             options = self.config_entry.options
 
             # Always run registry first — it establishes the base nodes
-            adapters = [RegistryAdapter(self.hass)]
+            adapters: list[SourceAdapter] = [RegistryAdapter(self.hass)]
             adapters.append(AutomationAdapter(self.hass))
             adapters.append(ScriptAdapter(self.hass))
             adapters.append(SceneAdapter(self.hass))
@@ -79,7 +80,7 @@ class GraphBuilder:
             for adapter in adapters:
                 try:
                     await adapter.async_populate(new_graph)
-                except Exception:  # noqa: BLE001
+                except Exception:
                     _LOGGER.exception(
                         "Error running adapter %s",
                         type(adapter).__name__,
@@ -87,7 +88,7 @@ class GraphBuilder:
 
             # Atomic swap
             self.graph = new_graph
-            self.last_scan = datetime.now(timezone.utc)
+            self.last_scan = datetime.now(UTC)
 
             _LOGGER.info(
                 "Dependency graph built: %d nodes, %d edges",

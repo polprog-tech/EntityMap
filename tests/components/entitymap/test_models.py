@@ -17,14 +17,12 @@ from custom_components.entitymap.const import (
     Severity,
 )
 from custom_components.entitymap.models import (
-    DependencyGraph,
     FragilityFinding,
     GraphEdge,
     GraphNode,
     ImpactReport,
     MigrationSuggestion,
 )
-
 
 # ── GraphNode ───────────────────────────────────────────────────────
 
@@ -373,7 +371,7 @@ class TestGraphNeighborhood:
         graph.add_edge(GraphEdge("c", "d", DependencyKind.TEMPLATE_REFERENCE))
 
         """WHEN querying neighborhood of A at depth=1."""
-        nodes, edges = graph.get_neighborhood("a", depth=1)
+        nodes, _edges = graph.get_neighborhood("a", depth=1)
 
         """THEN A, B, C are included but D is not."""
         assert "a" in nodes
@@ -391,7 +389,7 @@ class TestGraphNeighborhood:
         graph.add_edge(GraphEdge("c", "d", DependencyKind.TEMPLATE_REFERENCE))
 
         """WHEN querying neighborhood of A at depth=2."""
-        nodes, edges = graph.get_neighborhood("a", depth=2)
+        nodes, _edges = graph.get_neighborhood("a", depth=2)
 
         """THEN D is included."""
         assert "d" in nodes

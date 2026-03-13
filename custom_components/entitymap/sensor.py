@@ -60,10 +60,7 @@ async def async_setup_entry(
 ) -> None:
     """Set up EntityMap sensor entities."""
     builder: GraphBuilder = entry.runtime_data.builder
-    entities = [
-        EntityMapSensor(entry, description, builder)
-        for description in SENSOR_DESCRIPTIONS
-    ]
+    entities = [EntityMapSensor(entry, description, builder) for description in SENSOR_DESCRIPTIONS]
     async_add_entities(entities)
 
 
@@ -100,9 +97,7 @@ class EntityMapSensor(SensorEntity):
     async def async_added_to_hass(self) -> None:
         """Register event listener."""
         self.async_on_remove(
-            self.hass.bus.async_listen(
-                EVENT_GRAPH_UPDATED, self._handle_graph_update
-            )
+            self.hass.bus.async_listen(EVENT_GRAPH_UPDATED, self._handle_graph_update)
         )
 
     @callback
@@ -134,8 +129,6 @@ class EntityMapSensor(SensorEntity):
         key = self.entity_description.key
         if key == "total_nodes":
             from collections import Counter
-
-            from .const import NodeType
 
             graph = self._builder.graph
             type_counts: Counter[str] = Counter()

@@ -5,7 +5,6 @@ from __future__ import annotations
 import pathlib
 
 from aiohttp import web
-
 from homeassistant.components.http import HomeAssistantView
 
 PANEL_JS_PATH = pathlib.Path(__file__).parent / "frontend" / "entitymap-panel.js"

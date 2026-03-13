@@ -7,7 +7,6 @@ from typing import Any
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
-from .const import DOMAIN
 from .fragility import detect_fragility
 
 
@@ -23,15 +22,13 @@ async def async_get_config_entry_diagnostics(
     # We keep the domain prefix but redact the object_id part
     def redact_id(node_id: str) -> str:
         if "." in node_id:
-            domain, obj_id = node_id.split(".", 1)
+            domain, _obj_id = node_id.split(".", 1)
             return f"{domain}.***"
         return "***"
 
     node_summary: dict[str, int] = {}
     for node in graph.nodes.values():
-        node_summary[node.node_type.value] = (
-            node_summary.get(node.node_type.value, 0) + 1
-        )
+        node_summary[node.node_type.value] = node_summary.get(node.node_type.value, 0) + 1
 
     edge_summary: dict[str, int] = {}
     for edge in graph.edges:
@@ -61,9 +58,7 @@ async def async_get_config_entry_diagnostics(
             "findings_by_type": finding_summary,
         },
         "scanner": {
-            "last_scan": (
-                builder.last_scan.isoformat() if builder.last_scan else None
-            ),
+            "last_scan": (builder.last_scan.isoformat() if builder.last_scan else None),
             "is_scanning": builder.is_scanning,
         },
     }

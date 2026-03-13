@@ -43,18 +43,12 @@ def get_migration_report(
     if trigger_sources:
         suggestions.append(
             MigrationSuggestion(
-                description=(
-                    f"{len(trigger_sources)} automation(s) use this entity as a trigger."
-                ),
+                description=(f"{len(trigger_sources)} automation(s) use this entity as a trigger."),
                 affected_items=tuple(trigger_sources),
                 recommendation=(
                     "After replacing the entity, update the trigger entity_id "
                     "in each automation to the new entity."
-                    + (
-                        f" New entity: {target_node_id}"
-                        if target_node_id
-                        else ""
-                    )
+                    + (f" New entity: {target_node_id}" if target_node_id else "")
                 ),
             )
         )
@@ -65,13 +59,10 @@ def get_migration_report(
         suggestions.append(
             MigrationSuggestion(
                 description=(
-                    f"{len(condition_sources)} automation(s) use this entity "
-                    "in a condition."
+                    f"{len(condition_sources)} automation(s) use this entity in a condition."
                 ),
                 affected_items=tuple(condition_sources),
-                recommendation=(
-                    "Update condition entity_id references to the new entity."
-                ),
+                recommendation=("Update condition entity_id references to the new entity."),
             )
         )
 
@@ -85,9 +76,7 @@ def get_migration_report(
                     "entity in an action."
                 ),
                 affected_items=tuple(action_sources),
-                recommendation=(
-                    "Update action entity_id/target references."
-                ),
+                recommendation=("Update action entity_id/target references."),
             )
         )
 
@@ -97,11 +86,7 @@ def get_migration_report(
         DependencyKind.DEVICE_CONDITION,
         DependencyKind.DEVICE_ACTION,
     }
-    device_refs = [
-        e.source
-        for e in inbound
-        if e.dependency_kind in device_kinds
-    ]
+    device_refs = [e.source for e in inbound if e.dependency_kind in device_kinds]
     if device_refs:
         suggestions.append(
             MigrationSuggestion(
@@ -124,9 +109,7 @@ def get_migration_report(
     if scene_members:
         suggestions.append(
             MigrationSuggestion(
-                description=(
-                    f"{len(scene_members)} scene(s) include this entity."
-                ),
+                description=(f"{len(scene_members)} scene(s) include this entity."),
                 affected_items=tuple(scene_members),
                 recommendation=(
                     "After replacing, update each scene to include the "
@@ -140,13 +123,10 @@ def get_migration_report(
     if group_members:
         suggestions.append(
             MigrationSuggestion(
-                description=(
-                    f"{len(group_members)} group(s) include this entity."
-                ),
+                description=(f"{len(group_members)} group(s) include this entity."),
                 affected_items=tuple(group_members),
                 recommendation=(
-                    "Update group configuration to replace the old entity "
-                    "with the new one."
+                    "Update group configuration to replace the old entity with the new one."
                 ),
             )
         )
