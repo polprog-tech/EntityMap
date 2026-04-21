@@ -1,4 +1,4 @@
-"""Script adapter — parse script configs for dependency edges."""
+"""Script adapter - parse script configs for dependency edges."""
 
 from __future__ import annotations
 

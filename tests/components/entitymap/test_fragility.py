@@ -23,8 +23,8 @@ from custom_components.entitymap.models import (
 class TestCleanGraph:
     """Scenarios where no fragility issues should be detected."""
 
+    """GIVEN an empty graph."""
     def test_empty_graph_has_no_findings(self, empty_graph):
-        """GIVEN an empty graph."""
 
         """WHEN detecting fragility."""
         findings = detect_fragility(empty_graph)
@@ -32,8 +32,9 @@ class TestCleanGraph:
         """THEN zero findings are returned."""
         assert len(findings) == 0
 
+    """GIVEN a well-formed graph with valid entity references."""
     def test_clean_entity_graph_has_no_critical_findings(self):
-        """GIVEN a well-formed graph with valid entity references."""
+
         graph = DependencyGraph()
         graph.add_node(GraphNode("light.test", NodeType.ENTITY, "Test Light"))
         graph.add_node(GraphNode("automation.test", NodeType.AUTOMATION, "Test Auto"))
@@ -58,8 +59,9 @@ class TestCleanGraph:
 class TestMissingEntityReference:
     """Scenarios for the MISSING_ENTITY fragility type."""
 
+    """GIVEN an automation with an edge to a non-existent entity."""
     def test_detects_edge_to_nonexistent_entity(self):
-        """GIVEN an automation with an edge to a non-existent entity."""
+
         graph = DependencyGraph()
         graph.add_node(GraphNode("automation.test", NodeType.AUTOMATION, "Test Auto"))
         graph.add_edge(GraphEdge("automation.test", "light.nonexistent", DependencyKind.TRIGGER))
@@ -73,8 +75,9 @@ class TestMissingEntityReference:
         assert missing[0].node_id == "automation.test"
         assert "light.nonexistent" in missing[0].related_node_ids
 
+    """GIVEN an automation with a missing entity reference."""
     def test_finding_has_actionable_remediation(self):
-        """GIVEN an automation with a missing entity reference."""
+
         graph = DependencyGraph()
         graph.add_node(GraphNode("automation.x", NodeType.AUTOMATION, "X"))
         graph.add_edge(GraphEdge("automation.x", "sensor.gone", DependencyKind.CONDITION))
@@ -91,8 +94,9 @@ class TestMissingEntityReference:
 class TestMissingDeviceReference:
     """Scenarios for the MISSING_DEVICE fragility type."""
 
+    """GIVEN an automation with a device_trigger edge to a missing device."""
     def test_detects_edge_to_nonexistent_device(self):
-        """GIVEN an automation with a device_trigger edge to a missing device."""
+
         graph = DependencyGraph()
         graph.add_node(GraphNode("automation.test", NodeType.AUTOMATION, "Test Auto"))
         graph.add_edge(GraphEdge("automation.test", "device.gone", DependencyKind.DEVICE_TRIGGER))
@@ -108,8 +112,9 @@ class TestMissingDeviceReference:
 class TestDeviceIdUsage:
     """Scenarios for the DEVICE_ID_REFERENCE fragility type."""
 
+    """GIVEN an automation using a device_trigger to an existing device."""
     def test_detects_device_trigger_usage(self):
-        """GIVEN an automation using a device_trigger to an existing device."""
+
         graph = DependencyGraph()
         graph.add_node(GraphNode("automation.test", NodeType.AUTOMATION, "Test Auto"))
         graph.add_node(GraphNode("device.sensor1", NodeType.DEVICE, "Sensor"))
@@ -125,8 +130,9 @@ class TestDeviceIdUsage:
         assert len(devid) == 1
         assert devid[0].severity == Severity.MEDIUM
 
+    """GIVEN an automation using only entity-based triggers."""
     def test_no_device_id_finding_for_entity_triggers(self):
-        """GIVEN an automation using only entity-based triggers."""
+
         graph = DependencyGraph()
         graph.add_node(GraphNode("automation.test", NodeType.AUTOMATION, "Test"))
         graph.add_node(GraphNode("sensor.temp", NodeType.ENTITY, "Temp"))
@@ -143,8 +149,9 @@ class TestDeviceIdUsage:
 class TestDisabledReference:
     """Scenarios for the DISABLED_REFERENCE fragility type."""
 
+    """GIVEN an automation referencing a disabled entity."""
     def test_detects_reference_to_disabled_entity(self):
-        """GIVEN an automation referencing a disabled entity."""
+
         graph = DependencyGraph()
         graph.add_node(GraphNode("automation.test", NodeType.AUTOMATION, "Test"))
         graph.add_node(
@@ -164,8 +171,9 @@ class TestDisabledReference:
         disabled = [f for f in findings if f.fragility_type == FragilityType.DISABLED_REFERENCE]
         assert len(disabled) == 1
 
+    """GIVEN an automation referencing an enabled entity."""
     def test_no_finding_for_enabled_entity(self):
-        """GIVEN an automation referencing an enabled entity."""
+
         graph = DependencyGraph()
         graph.add_node(GraphNode("automation.test", NodeType.AUTOMATION, "Test"))
         graph.add_node(GraphNode("light.ok", NodeType.ENTITY, "OK", disabled=False))
@@ -182,8 +190,9 @@ class TestDisabledReference:
 class TestTightDeviceCoupling:
     """Scenarios for the TIGHT_DEVICE_COUPLING fragility type."""
 
+    """GIVEN an automation with 3+ device_id references to one device."""
     def test_three_device_refs_triggers_finding(self):
-        """GIVEN an automation with 3+ device_id references to one device."""
+
         graph = DependencyGraph()
         graph.add_node(GraphNode("automation.test", NodeType.AUTOMATION, "Test"))
         graph.add_node(GraphNode("device.sensor1", NodeType.DEVICE, "Sensor"))
@@ -202,8 +211,9 @@ class TestTightDeviceCoupling:
         assert len(tight) == 1
         assert tight[0].severity == Severity.HIGH
 
+    """GIVEN an automation with only 2 device_id references."""
     def test_two_device_refs_is_not_tight(self):
-        """GIVEN an automation with only 2 device_id references."""
+
         graph = DependencyGraph()
         graph.add_node(GraphNode("automation.test", NodeType.AUTOMATION, "Test"))
         graph.add_node(GraphNode("device.sensor1", NodeType.DEVICE, "Sensor"))
@@ -225,8 +235,9 @@ class TestTightDeviceCoupling:
 class TestHiddenDependency:
     """Scenarios for the HIDDEN_DEPENDENCY fragility type."""
 
+    """GIVEN an automation calling a script that has 3+ dependencies."""
     def test_automation_calling_complex_script(self):
-        """GIVEN an automation calling a script that has 3+ dependencies."""
+
         graph = DependencyGraph()
         graph.add_node(GraphNode("automation.test", NodeType.AUTOMATION, "Test Auto"))
         graph.add_node(GraphNode("script.complex", NodeType.SCRIPT, "Complex Script"))
@@ -246,8 +257,9 @@ class TestHiddenDependency:
         assert len(hidden) == 1
         assert hidden[0].severity == Severity.INFO
 
+    """GIVEN an automation calling a script with only 1 dependency."""
     def test_automation_calling_simple_script_is_not_hidden(self):
-        """GIVEN an automation calling a script with only 1 dependency."""
+
         graph = DependencyGraph()
         graph.add_node(GraphNode("automation.test", NodeType.AUTOMATION, "Test"))
         graph.add_node(GraphNode("script.simple", NodeType.SCRIPT, "Simple"))
@@ -266,8 +278,8 @@ class TestHiddenDependency:
 class TestFindingIdStability:
     """Scenarios verifying deterministic finding IDs."""
 
+    """GIVEN two identical graphs with the same missing reference."""
     def test_same_inputs_produce_same_finding_id(self):
-        """GIVEN two identical graphs with the same missing reference."""
 
         def _make_graph():
             g = DependencyGraph()

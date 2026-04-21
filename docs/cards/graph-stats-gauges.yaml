@@ -1,4 +1,4 @@
-# EntityMap — Graph Stats Gauges Card
+# EntityMap - Graph Stats Gauges Card
 #
 # Two gauges showing node and dependency counts with color coding.
 # Useful for tracking graph growth over time.

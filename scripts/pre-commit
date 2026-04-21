@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# Pre-commit hook: runs lint (with auto-fix), format check, and tests.
+# Install: cp scripts/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+set -e
+
+# Activate venv if present
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+if [ -f "$REPO_ROOT/.venv/bin/activate" ]; then
+  source "$REPO_ROOT/.venv/bin/activate"
+fi
+
+# Collect staged Python files
+STAGED_PY=$(git diff --cached --name-only --diff-filter=ACM | grep '\.py$' || true)
+
+if [ -n "$STAGED_PY" ]; then
+  echo "🔧 Running ruff check on staged files..."
+  echo "$STAGED_PY" | xargs ruff check --fix
+  echo "✅ Lint passed"
+
+  echo ""
+  echo "🎨 Checking ruff format on staged files..."
+  if ! echo "$STAGED_PY" | xargs ruff format --check 2>/dev/null; then
+    echo ""
+    echo "⚠️  Formatting issues found. Running auto-format..."
+    echo "$STAGED_PY" | xargs ruff format
+    echo "📝 Files reformatted - please review and re-stage (git add) before committing."
+    exit 1
+  fi
+  echo "✅ Format OK"
+else
+  echo "ℹ️  No staged Python files - skipping lint & format."
+fi
+
+echo ""
+echo "🧪 Running tests..."
+python3 -m pytest tests/ -q --tb=short
+echo "✅ Tests passed"
+
+echo ""
+echo "🚀 All checks passed - committing."

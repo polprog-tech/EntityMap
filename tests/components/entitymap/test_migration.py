@@ -19,8 +19,8 @@ from custom_components.entitymap.models import (
 class TestMigrationForNonexistentNode:
     """Scenarios where the source node doesn't exist."""
 
+    """GIVEN an empty graph."""
     def test_returns_not_found_message(self, empty_graph):
-        """GIVEN an empty graph."""
 
         """WHEN requesting migration for a nonexistent node."""
         result = get_migration_report(empty_graph, "nonexistent.node")
@@ -33,8 +33,9 @@ class TestMigrationForNonexistentNode:
 class TestMigrationForIsolatedNode:
     """Scenarios where the node has no inbound dependencies."""
 
+    """GIVEN an entity with no inbound edges."""
     def test_indicates_safe_removal(self):
-        """GIVEN an entity with no inbound edges."""
+
         graph = DependencyGraph()
         graph.add_node(GraphNode("light.test", NodeType.ENTITY, "Test"))
 
@@ -49,8 +50,9 @@ class TestMigrationForIsolatedNode:
 class TestMigrationForTriggerDependency:
     """Scenarios for entities used as automation triggers."""
 
+    """GIVEN an entity used as a trigger by one automation."""
     def test_generates_trigger_migration_suggestion(self):
-        """GIVEN an entity used as a trigger by one automation."""
+
         graph = DependencyGraph()
         graph.add_node(GraphNode("light.test", NodeType.ENTITY, "Test"))
         graph.add_node(GraphNode("automation.a", NodeType.AUTOMATION, "Auto A"))
@@ -63,8 +65,9 @@ class TestMigrationForTriggerDependency:
         trigger_suggestions = [s for s in result if "trigger" in s.description.lower()]
         assert len(trigger_suggestions) == 1
 
+    """GIVEN a migration from old to new entity."""
     def test_includes_target_entity_when_specified(self):
-        """GIVEN a migration from old to new entity."""
+
         graph = DependencyGraph()
         graph.add_node(GraphNode("light.old", NodeType.ENTITY, "Old Light"))
         graph.add_node(GraphNode("automation.a", NodeType.AUTOMATION, "Auto"))
@@ -82,8 +85,9 @@ class TestMigrationForTriggerDependency:
 class TestMigrationForDeviceReplacement:
     """Scenarios for device replacement migrations."""
 
+    """GIVEN a device with device_id references from automations."""
     def test_device_with_device_id_refs_warns(self):
-        """GIVEN a device with device_id references from automations."""
+
         graph = DependencyGraph()
         graph.add_node(GraphNode("device.sensor1", NodeType.DEVICE, "Sensor 1"))
         graph.add_node(
@@ -105,8 +109,9 @@ class TestMigrationForDeviceReplacement:
         device_ref_suggestions = [s for s in result if "device_id" in s.description.lower()]
         assert len(device_ref_suggestions) >= 1
 
+    """GIVEN a device that provides entities."""
     def test_device_with_entities_lists_entity_mapping(self):
-        """GIVEN a device that provides entities."""
+
         graph = DependencyGraph()
         graph.add_node(GraphNode("device.hub", NodeType.DEVICE, "Hub"))
         graph.add_node(GraphNode("sensor.temp", NodeType.ENTITY, "Temp", device_id="hub"))
@@ -125,8 +130,9 @@ class TestMigrationForDeviceReplacement:
 class TestMigrationForSceneMembers:
     """Scenarios for entities that are scene members."""
 
+    """GIVEN an entity that's a member of a scene."""
     def test_scene_member_migration(self):
-        """GIVEN an entity that's a member of a scene."""
+
         graph = DependencyGraph()
         graph.add_node(GraphNode("light.test", NodeType.ENTITY, "Test"))
         graph.add_node(GraphNode("scene.evening", NodeType.SCENE, "Evening"))
@@ -143,8 +149,9 @@ class TestMigrationForSceneMembers:
 class TestMigrationForGroupMembers:
     """Scenarios for entities that are group members."""
 
+    """GIVEN an entity that's a member of a group."""
     def test_group_member_migration(self):
-        """GIVEN an entity that's a member of a group."""
+
         graph = DependencyGraph()
         graph.add_node(GraphNode("light.test", NodeType.ENTITY, "Test"))
         graph.add_node(GraphNode("group.all_lights", NodeType.GROUP, "All Lights"))
@@ -161,8 +168,9 @@ class TestMigrationForGroupMembers:
 class TestMigrationForMultipleDependencies:
     """Scenarios where an entity has many dependency types."""
 
+    """GIVEN an entity used as a trigger AND a scene member."""
     def test_entity_with_trigger_and_scene_produces_both(self):
-        """GIVEN an entity used as a trigger AND a scene member."""
+
         graph = DependencyGraph()
         graph.add_node(GraphNode("light.multi", NodeType.ENTITY, "Multi"))
         graph.add_node(GraphNode("automation.a", NodeType.AUTOMATION, "Auto"))

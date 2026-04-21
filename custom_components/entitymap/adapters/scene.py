@@ -1,4 +1,4 @@
-"""Scene adapter — parse scene configs for dependency edges."""
+"""Scene adapter - parse scene configs for dependency edges."""
 
 from __future__ import annotations
 

@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions & Discussions
+    url: https://github.com/polprog-tech/EntityMap/discussions
+    about: Please use GitHub Discussions for questions, usage help, or general chat.
+  - name: Security Vulnerabilities
+    url: https://github.com/polprog-tech/EntityMap/blob/main/SECURITY.md
+    about: Do not open a public issue. See our security policy for private reporting.

@@ -1,4 +1,4 @@
-"""Template adapter — scan template entities for entity references."""
+"""Template adapter - scan template entities for entity references."""
 
 from __future__ import annotations
 

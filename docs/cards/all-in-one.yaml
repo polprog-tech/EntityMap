@@ -1,4 +1,4 @@
-# EntityMap — All-in-One Card
+# EntityMap - All-in-One Card
 #
 # A single vertical-stack card with everything:
 # status tiles, gauges, history charts, and rescan button.
@@ -78,7 +78,7 @@ cards:
 
   # ── History charts ────────────────────────────────────────────
   - type: history-graph
-    title: "📈 Graph Growth — 7 days"
+    title: "📈 Graph Growth - 7 days"
     hours_to_show: 168
     entities:
       - entity: sensor.entitymap_total_nodes
@@ -87,7 +87,7 @@ cards:
         name: Dependencies
 
   - type: history-graph
-    title: "📊 Fragility Issues — 7 days"
+    title: "📊 Fragility Issues - 7 days"
     hours_to_show: 168
     entities:
       - entity: sensor.entitymap_fragility_issues

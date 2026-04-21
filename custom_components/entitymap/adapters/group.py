@@ -1,4 +1,4 @@
-"""Group adapter — parse group membership for dependency edges."""
+"""Group adapter - parse group membership for dependency edges."""
 
 from __future__ import annotations
 

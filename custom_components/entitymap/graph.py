@@ -1,4 +1,4 @@
-"""Graph builder — orchestrates source adapters and builds the dependency graph."""
+"""Graph builder - orchestrates source adapters and builds the dependency graph."""
 
 from __future__ import annotations
 
@@ -65,7 +65,7 @@ class GraphBuilder:
             new_graph = DependencyGraph()
             options = self.config_entry.options
 
-            # Always run registry first — it establishes the base nodes
+            # Always run registry first - it establishes the base nodes
             adapters: list[SourceAdapter] = [RegistryAdapter(self.hass)]
             adapters.append(AutomationAdapter(self.hass))
             adapters.append(ScriptAdapter(self.hass))

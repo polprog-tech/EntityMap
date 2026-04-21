@@ -21,15 +21,15 @@ class TestGraphBuilderInitialState:
         """Create a graph builder."""
         return GraphBuilder(mock_hass, mock_config_entry)
 
+    """GIVEN a new GraphBuilder."""
     def test_starts_with_empty_graph(self, builder):
-        """GIVEN a new GraphBuilder."""
 
         """THEN the graph has zero nodes and edges."""
         assert builder.graph.node_count == 0
         assert builder.graph.edge_count == 0
 
+    """GIVEN a new GraphBuilder."""
     def test_no_scan_has_occurred(self, builder):
-        """GIVEN a new GraphBuilder."""
 
         """THEN last_scan is None and is_scanning is False."""
         assert builder.last_scan is None
@@ -43,9 +43,9 @@ class TestGraphBuilderBuild:
     def builder(self, mock_hass, mock_config_entry):
         return GraphBuilder(mock_hass, mock_config_entry)
 
+    """GIVEN an empty builder."""
     @pytest.mark.asyncio
     async def test_build_sets_last_scan_timestamp(self, builder):
-        """GIVEN an empty builder."""
 
         """WHEN a build completes."""
         with (
@@ -63,9 +63,9 @@ class TestGraphBuilderBuild:
         assert builder.last_scan is not None
         assert builder.is_scanning is False
 
+    """GIVEN a builder with a mocked hass."""
     @pytest.mark.asyncio
     async def test_build_fires_lifecycle_events(self, builder, mock_hass):
-        """GIVEN a builder with a mocked hass."""
 
         """WHEN a build completes."""
         with (
@@ -93,8 +93,8 @@ class TestGraphBuilderSerialization:
     def builder(self, mock_hass, mock_config_entry):
         return GraphBuilder(mock_hass, mock_config_entry)
 
+    """GIVEN an empty builder."""
     def test_get_graph_data_returns_expected_keys(self, builder):
-        """GIVEN an empty builder."""
 
         """WHEN get_graph_data is called."""
         data = builder.get_graph_data()
@@ -105,8 +105,9 @@ class TestGraphBuilderSerialization:
         assert data["node_count"] == 0
         assert data["edge_count"] == 0
 
+    """GIVEN a builder with manually added nodes."""
     def test_graph_data_reflects_added_nodes(self, builder):
-        """GIVEN a builder with manually added nodes."""
+
         from custom_components.entitymap.const import NodeType
         from custom_components.entitymap.models import GraphNode
 

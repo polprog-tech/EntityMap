@@ -1,5 +1,5 @@
 /**
- * EntityMap Panel — Interactive dependency graph visualization for Home Assistant.
+ * EntityMap Panel - Interactive dependency graph visualization for Home Assistant.
  *
  * Uses LitElement for the component framework and D3.js for the force-directed
  * graph layout. Renders as SVG for crisp scaling and accessibility.
@@ -554,7 +554,7 @@ class EntityMapPanel extends HTMLElement {
           <div class="risk-meter">
             <div class="risk-bar" style="width:${impact.risk_score}%;background:${SEVERITY_COLORS[impact.severity]}"></div>
           </div>
-          <span class="risk-label">Risk: ${impact.risk_score.toFixed(0)}% — ${impact.severity}</span>
+          <span class="risk-label">Risk: ${impact.risk_score.toFixed(0)}% - ${impact.severity}</span>
         </div>
         <p class="impact-text">${impact.summary}</p>
         ${Object.keys(impact.affected_by_type).length > 0 ? `

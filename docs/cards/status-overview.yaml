@@ -1,4 +1,4 @@
-# EntityMap — Status Overview Card
+# EntityMap - Status Overview Card
 #
 # Compact row of tiles showing the key dependency graph metrics.
 # Nodes, dependencies, fragility issues, and last scan time at a glance.

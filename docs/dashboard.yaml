@@ -1,4 +1,4 @@
-# EntityMap — Full Dedicated Dashboard
+# EntityMap - Full Dedicated Dashboard
 #
 # A complete dashboard layout with all EntityMap cards pre-arranged.
 # Intended as a standalone "Dependency Health" dashboard.
@@ -94,7 +94,7 @@ views:
 
       # ── Row 3: Graph growth over time ───────────────────────────
       - type: history-graph
-        title: "📈 Graph Growth — 7 days"
+        title: "📈 Graph Growth - 7 days"
         hours_to_show: 168
         entities:
           - entity: sensor.entitymap_total_nodes
@@ -104,7 +104,7 @@ views:
 
       # ── Row 4: Fragility trend ──────────────────────────────────
       - type: history-graph
-        title: "📊 Fragility Issues — 7 days"
+        title: "📊 Fragility Issues - 7 days"
         hours_to_show: 168
         entities:
           - entity: sensor.entitymap_fragility_issues

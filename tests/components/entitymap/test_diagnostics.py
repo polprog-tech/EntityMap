@@ -21,9 +21,10 @@ from custom_components.entitymap.models import GraphEdge, GraphNode
 class TestDiagnosticsOutput:
     """Scenarios for the diagnostics data structure."""
 
+    """GIVEN a builder with a small graph."""
     @pytest.mark.asyncio
     async def test_contains_expected_top_level_keys(self, mock_hass, mock_config_entry):
-        """GIVEN a builder with a small graph."""
+
         builder = GraphBuilder(mock_hass, mock_config_entry)
         builder.graph.add_node(GraphNode("light.test", NodeType.ENTITY, "Test"))
         builder.graph.add_node(GraphNode("automation.a", NodeType.AUTOMATION, "Auto A"))
@@ -42,9 +43,10 @@ class TestDiagnosticsOutput:
         assert "scanner" in result
         assert "config_entry" in result
 
+    """GIVEN a graph with 2 nodes and 1 edge."""
     @pytest.mark.asyncio
     async def test_graph_counts_are_accurate(self, mock_hass, mock_config_entry):
-        """GIVEN a graph with 2 nodes and 1 edge."""
+
         builder = GraphBuilder(mock_hass, mock_config_entry)
         builder.graph.add_node(GraphNode("light.a", NodeType.ENTITY, "A"))
         builder.graph.add_node(GraphNode("automation.b", NodeType.AUTOMATION, "B"))
@@ -65,9 +67,10 @@ class TestDiagnosticsOutput:
 class TestDiagnosticsPrivacy:
     """Scenarios verifying diagnostics do not leak sensitive data."""
 
+    """GIVEN an empty graph."""
     @pytest.mark.asyncio
     async def test_empty_graph_diagnostics_do_not_leak(self, mock_hass, mock_config_entry):
-        """GIVEN an empty graph."""
+
         builder = GraphBuilder(mock_hass, mock_config_entry)
         runtime_data = MagicMock()
         runtime_data.builder = builder
@@ -84,9 +87,10 @@ class TestDiagnosticsPrivacy:
 class TestDiagnosticsWithFindings:
     """Scenarios where the graph has fragility issues."""
 
+    """GIVEN a graph with a missing entity reference."""
     @pytest.mark.asyncio
     async def test_fragility_findings_included(self, mock_hass, mock_config_entry):
-        """GIVEN a graph with a missing entity reference."""
+
         builder = GraphBuilder(mock_hass, mock_config_entry)
         builder.graph.add_node(GraphNode("automation.x", NodeType.AUTOMATION, "X"))
         builder.graph.add_edge(GraphEdge("automation.x", "light.ghost", DependencyKind.TRIGGER))

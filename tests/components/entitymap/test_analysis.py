@@ -104,8 +104,8 @@ def _build_realistic_graph() -> DependencyGraph:
 class TestImpactOnNonexistentNode:
     """Scenarios where the target node doesn't exist."""
 
+    """GIVEN an empty graph."""
     def test_returns_info_severity(self, empty_graph):
-        """GIVEN an empty graph."""
 
         """WHEN analyzing impact for a nonexistent node."""
         report = analyze_impact(empty_graph, "nonexistent.node")
@@ -114,8 +114,8 @@ class TestImpactOnNonexistentNode:
         assert report.severity == Severity.INFO
         assert "not found" in report.summary
 
+    """GIVEN an empty graph."""
     def test_returns_zero_affected(self, empty_graph):
-        """GIVEN an empty graph."""
 
         """WHEN analyzing a missing node."""
         report = analyze_impact(empty_graph, "ghost.entity")
@@ -128,8 +128,9 @@ class TestImpactOnNonexistentNode:
 class TestImpactOnEntityWithDependents:
     """Scenarios for entities that automations depend on."""
 
+    """GIVEN a motion sensor used as trigger by an automation."""
     def test_sensor_with_automation_trigger(self):
-        """GIVEN a motion sensor used as trigger by an automation."""
+
         graph = _build_realistic_graph()
 
         """WHEN analyzing its impact."""
@@ -140,8 +141,9 @@ class TestImpactOnEntityWithDependents:
         assert "automation" in report.affected_by_type
         assert report.risk_score > 0
 
+    """GIVEN a light used by both an automation and a script."""
     def test_light_with_multiple_dependents(self):
-        """GIVEN a light used by both an automation and a script."""
+
         graph = _build_realistic_graph()
 
         """WHEN analyzing its impact."""
@@ -150,8 +152,9 @@ class TestImpactOnEntityWithDependents:
         """THEN at least both are reported as affected."""
         assert len(report.affected_nodes) >= 2
 
+    """GIVEN a named entity in the realistic graph."""
     def test_report_summary_mentions_entity_name(self):
-        """GIVEN a named entity in the realistic graph."""
+
         graph = _build_realistic_graph()
 
         """WHEN analyzing its impact."""
@@ -165,8 +168,9 @@ class TestImpactOnEntityWithDependents:
 class TestImpactOnDevice:
     """Scenarios for device impact analysis."""
 
+    """GIVEN a device with entities and automations referencing it."""
     def test_device_has_affected_nodes(self):
-        """GIVEN a device with entities and automations referencing it."""
+
         graph = _build_realistic_graph()
 
         """WHEN analyzing its impact."""
@@ -176,8 +180,9 @@ class TestImpactOnDevice:
         assert len(report.affected_nodes) > 0
         assert report.risk_score > 0
 
+    """GIVEN a device with device_id references."""
     def test_device_generates_migration_suggestions(self):
-        """GIVEN a device with device_id references."""
+
         graph = _build_realistic_graph()
 
         """WHEN analyzing its impact."""
@@ -190,8 +195,9 @@ class TestImpactOnDevice:
 class TestImpactOnHelper:
     """Scenarios for helper entity impact."""
 
+    """GIVEN a helper used as a condition in an automation."""
     def test_helper_used_in_condition(self):
-        """GIVEN a helper used as a condition in an automation."""
+
         graph = _build_realistic_graph()
 
         """WHEN analyzing its impact."""
@@ -204,8 +210,9 @@ class TestImpactOnHelper:
 class TestImpactOnIsolatedNode:
     """Scenarios for nodes with no dependencies."""
 
+    """GIVEN a standalone entity with no edges."""
     def test_isolated_node_has_zero_risk(self):
-        """GIVEN a standalone entity with no edges."""
+
         graph = DependencyGraph()
         graph.add_node(GraphNode("sensor.standalone", NodeType.ENTITY, "Standalone"))
 
@@ -216,8 +223,9 @@ class TestImpactOnIsolatedNode:
         assert report.risk_score == 0
         assert report.severity == Severity.INFO
 
+    """GIVEN a standalone entity."""
     def test_isolated_node_has_empty_affected(self):
-        """GIVEN a standalone entity."""
+
         graph = DependencyGraph()
         graph.add_node(GraphNode("sensor.alone", NodeType.ENTITY, "Alone"))
 
@@ -232,8 +240,9 @@ class TestImpactOnIsolatedNode:
 class TestImpactRiskScoring:
     """Scenarios verifying the risk score calculation."""
 
+    """GIVEN an entity depended on by many automations vs one."""
     def test_high_dependency_count_increases_risk(self):
-        """GIVEN an entity depended on by many automations vs one."""
+
         graph = DependencyGraph()
         graph.add_node(GraphNode("light.x", NodeType.ENTITY, "X"))
         for i in range(5):

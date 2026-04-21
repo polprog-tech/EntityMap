@@ -2,11 +2,11 @@
 
 ## Design Goals
 
-1. **Trustworthy analysis** — users should be able to rely on EntityMap's dependency and impact reports
-2. **Minimal footprint** — avoid entity bloat, excessive logging, or recorder churn
-3. **Maintainability** — clean module boundaries, typed models, testable adapters
-4. **Extensibility** — adding new sources or finding types should be straightforward
-5. **Native feel** — integrate naturally with Home Assistant's UI patterns
+1. **Trustworthy analysis** - users should be able to rely on EntityMap's dependency and impact reports
+2. **Minimal footprint** - avoid entity bloat, excessive logging, or recorder churn
+3. **Maintainability** - clean module boundaries, typed models, testable adapters
+4. **Extensibility** - adding new sources or finding types should be straightforward
+5. **Native feel** - integrate naturally with Home Assistant's UI patterns
 
 ## Hybrid Event-Driven + On-Demand
 
@@ -53,12 +53,12 @@ Edges point from **dependent → dependency**:
 Each adapter implements `SourceAdapter.async_populate(graph)`:
 
 ```
-RegistryAdapter     — devices, entities, areas (always runs first)
-AutomationAdapter   — automation triggers, conditions, actions
-ScriptAdapter       — script sequences and service calls
-SceneAdapter        — scene entity membership
-GroupAdapter        — group member entities
-TemplateAdapter     — template entity Jinja2 references
+RegistryAdapter     - devices, entities, areas (always runs first)
+AutomationAdapter   - automation triggers, conditions, actions
+ScriptAdapter       - script sequences and service calls
+SceneAdapter        - scene entity membership
+GroupAdapter        - group member entities
+TemplateAdapter     - template entity Jinja2 references
 ```
 
 Adapters run sequentially. `RegistryAdapter` must run first to establish base nodes; others add edges and placeholder nodes for missing references.
@@ -78,10 +78,10 @@ Each finding gets a deterministic ID (MD5 hash of key fields) for stable trackin
 ## Impact Analysis
 
 Impact analysis combines:
-1. **Direct dependents** — one-hop inbound edges
-2. **Transitive dependents** — full BFS traversal of inbound graph
-3. **Risk scoring** — weighted formula based on dependent count, type, and edge fragility
-4. **Migration suggestions** — pattern-matched recommendations based on edge types
+1. **Direct dependents** - one-hop inbound edges
+2. **Transitive dependents** - full BFS traversal of inbound graph
+3. **Risk scoring** - weighted formula based on dependent count, type, and edge fragility
+4. **Migration suggestions** - pattern-matched recommendations based on edge types
 
 ## Frontend
 

@@ -1,32 +1,116 @@
+<div align="center">
+  <img alt="entitymap" src="custom_components/entitymap/brand/logo-wordmark.svg" width="520">
+</div>
+
 <p align="center">
-  <img src="custom_components/entitymap/brand/logo-wordmark.svg" alt="EntityMap Logo" width="500" height="150">
+  <a href="https://github.com/polprog-tech/EntityMap/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/polprog-tech/EntityMap/ci.yml?branch=main&style=flat-square&logo=github" alt="CI"></a>
+  <a href="https://github.com/polprog-tech/EntityMap/actions/workflows/validate.yml"><img src="https://img.shields.io/github/actions/workflow/status/polprog-tech/EntityMap/validate.yml?branch=main&label=HACS&style=flat-square&logo=homeassistant" alt="HACS Validation"></a>
+  <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.12%2B-3776ab?style=flat-square&logo=python&logoColor=white" alt="Python 3.12+"></a>
+  <img src="https://img.shields.io/badge/tests-83%20passed-22c55e?style=flat-square&logo=pytest&logoColor=white" alt="Tests: 83 passed">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-6366f1?style=flat-square" alt="License: MIT"></a>
+  <a href="https://github.com/polprog-tech/EntityMap/releases"><img src="https://img.shields.io/github/v/release/polprog-tech/EntityMap?include_prereleases&label=version&style=flat-square" alt="Version"></a>
 </p>
 
 <p align="center">
-  <strong>Dependency Mapping & Impact Analysis for Home Assistant</strong>
+  <b>Dependency mapping and impact analysis for Home Assistant.</b><br>
+  <sub>Interactive graph . Impact analysis . Fragility detection . Migration guidance . 100% local</sub>
 </p>
 
 <p align="center">
-  <a href="https://github.com/polprog-tech/EntityMap/actions/workflows/ci.yml"><img src="https://github.com/polprog-tech/EntityMap/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://github.com/polprog-tech/EntityMap/actions/workflows/validate.yml"><img src="https://github.com/polprog-tech/EntityMap/actions/workflows/validate.yml/badge.svg" alt="HACS Validation"></a>
-  <a href="https://github.com/polprog-tech/EntityMap/releases"><img src="https://img.shields.io/github/v/release/polprog-tech/EntityMap?include_prereleases&label=version" alt="Version"></a>
-  <a href="https://github.com/polprog-tech/EntityMap/blob/main/LICENSE"><img src="https://img.shields.io/github/license/polprog-tech/EntityMap" alt="License"></a>
-  <a href="https://github.com/polprog-tech/EntityMap/stargazers"><img src="https://img.shields.io/github/stars/polprog-tech/EntityMap?style=flat" alt="Stars"></a>
+  <a href="#what-is-entitymap">About</a> .
+  <a href="#screenshots">Screenshots</a> .
+  <a href="#installation">Installation</a> .
+  <a href="#configuration-guide">Configuration</a> .
+  <a href="#architecture">Architecture</a> .
+  <a href="#development">Development</a> .
+  <a href="#license">License</a>
+</p>
+
+<p align="center">
+  <a href="https://buymeacoffee.com/polprog"><img src="https://img.shields.io/badge/Support%20this%20project-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black" alt="Support this project"></a>
 </p>
 
 ---
 
+## What is EntityMap?
+
 **EntityMap** is a Home Assistant custom integration that answers a simple question: **"What depends on what in my smart home?"**
 
-It scans your entire configuration — devices, entities, automations, scripts, scenes, helpers, groups — and builds a live dependency graph. Then it shows you, visually and interactively, how everything is connected. Before you replace a Zigbee device, disable an entity, or refactor an automation, EntityMap tells you exactly what will break.
+It scans your entire configuration - devices, entities, automations, scripts, scenes, helpers, groups - and builds a live dependency graph. Then it shows you, visually and interactively, how everything is connected. Before you replace a Zigbee device, disable an entity, or refactor an automation, EntityMap tells you exactly what will break.
 
-- **What depends on this device?** — See every automation, script, and scene that references it
-- **Is anything broken right now?** — Find missing entities, stale references, gone devices
-- **How risky is this change?** — Risk score from 0-100 with severity classification
-- **How do I safely replace this?** — Step-by-step migration guidance
-- **Are my automations fragile?** — Detect device_id references, tight coupling, hidden dependencies
+- **What depends on this device?** - See every automation, script, and scene that references it
+- **Is anything broken right now?** - Find missing entities, stale references, gone devices
+- **How risky is this change?** - Risk score from 0-100 with severity classification
+- **How do I safely replace this?** - Step-by-step migration guidance
+- **Are my automations fragile?** - Detect device_id references, tight coupling, hidden dependencies
 
-Unlike manually searching through YAML files, EntityMap gives you a **complete, interactive dependency graph** with one-click impact analysis — all 100% local, read-only, and instant.
+Unlike manually searching through YAML files, EntityMap gives you a **complete, interactive dependency graph** with one-click impact analysis - all 100% local, read-only, and instant.
+
+---
+
+## Screenshots
+
+### Dependency Graph
+
+Full interactive force-directed graph - every device, entity, automation, script, and scene as a connected node.
+
+<p align="center">
+  <img src="images/screenshots/graph-view.jpg" alt="EntityMap - dependency graph" width="800">
+</p>
+
+### Impact Analysis & Detail Panel
+
+Click any node to see risk score, affected entities, and step-by-step migration guidance.
+
+<p align="center">
+  <img src="images/screenshots/graph-detail.jpg" alt="EntityMap - impact analysis" width="800">
+</p>
+
+### Hierarchy - List View
+
+Collapsible list of Areas → Devices → Entities with entity IDs, availability badges, and counts.
+
+<p align="center">
+  <img src="images/screenshots/hierarchy-list.jpg" alt="EntityMap - hierarchy list" width="800">
+</p>
+
+### Hierarchy - Tree View
+
+Visual D3 tree layout (vertical and horizontal) - like a genealogical tree for your smart home.
+
+<p align="center">
+  <img src="images/screenshots/hierarchy-tree.jpg" alt="EntityMap - hierarchy tree (vertical)" width="800">
+</p>
+
+<p align="center">
+  <img src="images/screenshots/hierarchy-tree-horizontal.jpg" alt="EntityMap - hierarchy tree (horizontal)" width="800">
+</p>
+
+### Dashboard Cards
+
+Ready-made Lovelace cards - status tiles, gauges, history graphs, and a rescan button.
+
+<p align="center">
+  <img src="images/screenshots/dashboard-cards.jpg" alt="EntityMap - dashboard cards" width="400">
+</p>
+
+---
+
+## Key Features
+
+- **Interactive dependency graph** - Zoomable, draggable force-directed visualization with color-coded node types
+- **Hierarchy view** - Area → Device → Entity tree with list and visual D3 tree modes (horizontal & vertical)
+- **Impact analysis** - Select any node to see exactly what breaks if you remove, disable, or replace it
+- **Fragility detection** - Automatically find device_id references, missing entities, stale references, tight coupling
+- **Migration guidance** - Step-by-step recommendations for safely replacing devices or entities
+- **Repair issues** - Actionable warnings surfaced in Home Assistant's Repairs dashboard
+- **Three services** - `entitymap.scan`, `entitymap.analyze_impact`, `entitymap.get_dependencies`
+- **Summary sensors** - Total nodes, total dependencies, fragility issue count, last scan time
+- **WebSocket API** - Full programmatic access for custom dashboards and automations
+- **Fully async** - No blocking I/O; uses async adapters for all registry and config access
+- **Zero external dependencies** - Uses only libraries bundled with Home Assistant
+- **Diagnostics support** - Safe diagnostics output with sensitive data redaction
+- **UI configuration** - Config flow and options flow, no YAML needed
 
 ---
 
@@ -54,70 +138,6 @@ Unlike manually searching through YAML files, EntityMap gives you a **complete, 
 - [Contributing](#contributing)
 - [License](#license)
 - [Changelog](#changelog)
-
----
-
-## Key Features
-
-- **Interactive dependency graph** — Zoomable, draggable force-directed visualization with color-coded node types
-- **Hierarchy view** — Area → Device → Entity tree with list and visual D3 tree modes (horizontal & vertical)
-- **Impact analysis** — Select any node to see exactly what breaks if you remove, disable, or replace it
-- **Fragility detection** — Automatically find device_id references, missing entities, stale references, tight coupling
-- **Migration guidance** — Step-by-step recommendations for safely replacing devices or entities
-- **Repair issues** — Actionable warnings surfaced in Home Assistant's Repairs dashboard
-- **Three services** — `entitymap.scan`, `entitymap.analyze_impact`, `entitymap.get_dependencies`
-- **Summary sensors** — Total nodes, total dependencies, fragility issue count, last scan time
-- **WebSocket API** — Full programmatic access for custom dashboards and automations
-- **Fully async** — No blocking I/O; uses async adapters for all registry and config access
-- **Zero external dependencies** — Uses only libraries bundled with Home Assistant
-- **Diagnostics support** — Safe diagnostics output with sensitive data redaction
-- **UI configuration** — Config flow and options flow, no YAML needed
-
-## Screenshots
-
-### Dependency Graph
-
-Full interactive force-directed graph — every device, entity, automation, script, and scene as a connected node.
-
-<p align="center">
-  <img src="images/screenshots/graph-view.jpg" alt="EntityMap — dependency graph" width="800">
-</p>
-
-### Impact Analysis & Detail Panel
-
-Click any node to see risk score, affected entities, and step-by-step migration guidance.
-
-<p align="center">
-  <img src="images/screenshots/graph-detail.jpg" alt="EntityMap — impact analysis" width="800">
-</p>
-
-### Hierarchy — List View
-
-Collapsible list of Areas → Devices → Entities with entity IDs, availability badges, and counts.
-
-<p align="center">
-  <img src="images/screenshots/hierarchy-list.jpg" alt="EntityMap — hierarchy list" width="800">
-</p>
-
-### Hierarchy — Tree View
-
-Visual D3 tree layout (vertical and horizontal) — like a genealogical tree for your smart home.
-
-<p align="center">
-  <img src="images/screenshots/hierarchy-tree.jpg" alt="EntityMap — hierarchy tree (vertical)" width="800">
-</p>
-
-<p align="center">
-  <img src="images/screenshots/hierarchy-tree-horizontal.jpg" alt="EntityMap — hierarchy tree (horizontal)" width="800">
-</p>
-
-### Dashboard Cards
-
-Ready-made Lovelace cards — status tiles, gauges, history graphs, and a rescan button.
-
-<p align="center">
-  <img src="images/screenshots/dashboard-cards.jpg" alt="EntityMap — dashboard cards" width="400">
-</p>
 
 ---
 
@@ -202,11 +222,11 @@ EntityMap adds a panel to your Home Assistant sidebar. Here's what you can do:
 
 ### Graph View (default)
 
-- **Pan and zoom** — Scroll to zoom, drag the background to pan
-- **Drag nodes** — Click and drag any node to rearrange the layout
-- **Click a node** — Opens the detail panel with impact analysis, fragility findings, and migration guidance
-- **Filter by type** — Use the chips at the top to show/hide specific node types (devices, entities, automations, etc.)
-- **Search** — Type in the search box to filter nodes by name or ID; neighbors of matched nodes are shown too
+- **Pan and zoom** - Scroll to zoom, drag the background to pan
+- **Drag nodes** - Click and drag any node to rearrange the layout
+- **Click a node** - Opens the detail panel with impact analysis, fragility findings, and migration guidance
+- **Filter by type** - Use the chips at the top to show/hide specific node types (devices, entities, automations, etc.)
+- **Search** - Type in the search box to filter nodes by name or ID; neighbors of matched nodes are shown too
 
 ### Issues View
 
@@ -217,17 +237,17 @@ EntityMap adds a panel to your Home Assistant sidebar. Here's what you can do:
 ### Hierarchy View
 
 - Switch to the **Hierarchy** tab to browse your setup organized by Area → Device → Entity
-- **List mode** — Collapsible sections per area with device/entity counts, entity IDs, and availability badges; expand/collapse all with one click
-- **Tree mode** — Visual D3 tree layout; toggle between **↔ Horizontal** and **↕ Vertical** orientation; zoom, pan, and click any node to jump to the graph view
+- **List mode** - Collapsible sections per area with device/entity counts, entity IDs, and availability badges; expand/collapse all with one click
+- **Tree mode** - Visual D3 tree layout; toggle between **↔ Horizontal** and **↕ Vertical** orientation; zoom, pan, and click any node to jump to the graph view
 
 ### Detail Panel
 
 When you click a node, the right panel shows:
 
-- **Node identity** — Type badge, name, entity ID, availability status
-- **Impact analysis** — Risk meter (0-100%), severity, affected entity counts by type
-- **Fragility findings** — Issues specific to this node with severity and remediation
-- **Migration guidance** — Step-by-step recommendations if you're planning to replace or remove this entity/device
+- **Node identity** - Type badge, name, entity ID, availability status
+- **Impact analysis** - Risk meter (0-100%), severity, affected entity counts by type
+- **Fragility findings** - Issues specific to this node with severity and remediation
+- **Migration guidance** - Step-by-step recommendations if you're planning to replace or remove this entity/device
 
 ---
 
@@ -260,7 +280,7 @@ EntityMap creates a single device called **EntityMap** with the following entiti
 | Last scan | `sensor.entitymap_last_scan` |
 | Rescan | `button.entitymap_rescan` |
 
-Entity IDs are set via `suggested_object_id` in the code and are always English regardless of your Home Assistant language setting. The language setting only affects display names shown in the UI — the underlying entity IDs remain stable.
+Entity IDs are set via `suggested_object_id` in the code and are always English regardless of your Home Assistant language setting. The language setting only affects display names shown in the UI - the underlying entity IDs remain stable.
 
 ---
 
@@ -305,10 +325,10 @@ Returns: lists of nodes that this entity depends on, and nodes that depend on it
 
 When you select a node in the graph (or call `entitymap.analyze_impact`), EntityMap:
 
-1. **Finds direct dependents** — objects that explicitly reference the target
-2. **Traces transitive dependents** — the full chain of objects affected downstream
+1. **Finds direct dependents** - objects that explicitly reference the target
+2. **Traces transitive dependents** - the full chain of objects affected downstream
 3. **Calculates a risk score** (0-100) based on dependent count, object types, and reference fragility
-4. **Assigns severity** — Critical (≥70), High (≥50), Medium (≥25), Low (>0), Info (0)
+4. **Assigns severity** - Critical (≥70), High (≥50), Medium (≥25), Low (>0), Info (0)
 5. **Generates migration suggestions** based on the types of dependencies found
 
 ### Risk Score Examples
@@ -330,7 +350,7 @@ EntityMap automatically detects these fragility patterns on every scan:
 |---------|----------|---------------|
 | **Missing entity reference** | High | An automation references an entity that doesn't exist in the registry |
 | **Missing device reference** | High | An automation references a device that's been removed |
-| **Device ID reference** | Medium | Using `device_id`-based triggers — fragile to device re-pairing |
+| **Device ID reference** | Medium | Using `device_id`-based triggers - fragile to device re-pairing |
 | **Disabled reference** | Low | Referencing a disabled entity (may be intentional) |
 | **Tight device coupling** | High | 3+ `device_id` references to the same device in one automation |
 | **Hidden dependency** | Info | An automation calls a script that has many sub-dependencies of its own |
@@ -349,7 +369,7 @@ Findings appear in three places:
 1. Open the EntityMap panel from the sidebar
 2. Search for your device name
 3. Click the device node
-4. Review the impact panel — see every automation, script, and scene affected
+4. Review the impact panel - see every automation, script, and scene affected
 5. Follow the migration guidance checklist
 
 ### Finding Broken References After a Cleanup
@@ -374,13 +394,13 @@ Before a major HA update or device ecosystem change:
 service: entitymap.scan
 ```
 
-Then review `sensor.entitymap_fragility_issues` — if it's > 0, open the panel and address findings before proceeding.
+Then review `sensor.entitymap_fragility_issues` - if it's > 0, open the panel and address findings before proceeding.
 
 ---
 
 ## Ready-Made Dashboard
 
-EntityMap comes with ready-to-use cards — you can set up a full dashboard or add individual cards to any existing dashboard.
+EntityMap comes with ready-to-use cards - you can set up a full dashboard or add individual cards to any existing dashboard.
 
 ### How to add a card (3 steps)
 
@@ -396,7 +416,7 @@ That's it! The card appears on your dashboard immediately.
 
 ### 🟢 Option A: All-in-One Card
 
-One card with everything — status tiles, gauges, history charts, and rescan button. Perfect for adding to your main dashboard.
+One card with everything - status tiles, gauges, history charts, and rescan button. Perfect for adding to your main dashboard.
 
 Paste the contents of [`docs/cards/all-in-one.yaml`](docs/cards/all-in-one.yaml):
 
@@ -456,7 +476,7 @@ cards:
           yellow: 400
           red: 800
   - type: history-graph
-    title: "📈 Graph Growth — 7 days"
+    title: "📈 Graph Growth - 7 days"
     hours_to_show: 168
     entities:
       - entity: sensor.entitymap_total_nodes
@@ -464,7 +484,7 @@ cards:
       - entity: sensor.entitymap_total_edges
         name: Dependencies
   - type: history-graph
-    title: "📊 Fragility Issues — 7 days"
+    title: "📊 Fragility Issues - 7 days"
     hours_to_show: 168
     entities:
       - entity: sensor.entitymap_fragility_issues
@@ -513,7 +533,7 @@ If you want a separate "Dependency Health" dashboard with all cards pre-arranged
 | **Missing automations in the graph** | Ensure automations are loaded before EntityMap starts (check `after_dependencies` in manifest). Restart HA if needed. |
 | **Panel not showing in sidebar** | Clear browser cache. Check HA logs for frontend registration errors. |
 | **"Scan failed" repair issue** | Check HA logs for adapter errors. One of the source adapters may have hit an unexpected data format. File an issue with diagnostics. |
-| **Entities show `unknown`** | This is normal right after a restart — values populate after the first scan completes (usually within seconds). |
+| **Entities show `unknown`** | This is normal right after a restart - values populate after the first scan completes (usually within seconds). |
 | **Entity IDs don't match the docs** | If you previously installed EntityMap before `suggested_object_id` was added, remove and re-add the integration to get the correct English entity IDs. |
 
 ### Checking Logs
@@ -545,7 +565,7 @@ No. EntityMap is **completely read-only**. It only reads configuration data from
 <details>
 <summary><strong>How accurate is the template reference extraction?</strong></summary>
 
-EntityMap uses regex-based pattern matching to extract entity references from Jinja2 templates. This covers the common patterns — `states('entity_id')`, `is_state()`, `state_attr()`, and direct `states.domain.entity` references.
+EntityMap uses regex-based pattern matching to extract entity references from Jinja2 templates. This covers the common patterns - `states('entity_id')`, `is_state()`, `state_attr()`, and direct `states.domain.entity` references.
 
 Complex templates using `set` variables, macros, or dynamically constructed entity IDs may be missed. EntityMap marks these references as **inferred** (medium confidence) in the graph so you can distinguish them from direct references.
 
@@ -557,13 +577,13 @@ Coverage is approximately **85%** of real-world template usage. Full Jinja2 AST 
 
 The default 6-hour periodic scan works well for most users. EntityMap also listens for registry change events and rescans automatically when devices or entities are added, removed, or modified.
 
-You only need manual rescans after editing automation/script YAML — those changes don't trigger registry events.
+You only need manual rescans after editing automation/script YAML - those changes don't trigger registry events.
 </details>
 
 <details>
 <summary><strong>What happens with very large installations (1000+ entities)?</strong></summary>
 
-The backend scan is fast — typically under 2 seconds even for large installations. The visual graph clips at **500 nodes** for D3.js performance. Use the search and filter features to navigate large graphs.
+The backend scan is fast - typically under 2 seconds even for large installations. The visual graph clips at **500 nodes** for D3.js performance. Use the search and filter features to navigate large graphs.
 
 If you have 5000+ entities, scans may take 3-5 seconds. The graph will show the first 500 nodes; use type filters to focus on the nodes you care about.
 </details>
@@ -573,9 +593,9 @@ If you have 5000+ entities, scans may take 3-5 seconds. The graph will show the 
 
 Yes! You have several options:
 
-1. **Sensors** — Use `sensor.entitymap_fragility_issues` to trigger automations when new issues appear
-2. **Services** — Call `entitymap.analyze_impact` or `entitymap.get_dependencies` from scripts
-3. **WebSocket API** — For advanced use, the same WebSocket commands used by the panel are available to any WS client
+1. **Sensors** - Use `sensor.entitymap_fragility_issues` to trigger automations when new issues appear
+2. **Services** - Call `entitymap.analyze_impact` or `entitymap.get_dependencies` from scripts
+3. **WebSocket API** - For advanced use, the same WebSocket commands used by the panel are available to any WS client
 
 Example automation that alerts when fragility issues increase:
 
@@ -597,7 +617,7 @@ automation:
 <details>
 <summary><strong>Does EntityMap require internet access?</strong></summary>
 
-The backend is **100% local** — no internet required. However, the graph panel loads **D3.js from a CDN** on first use. If your HA instance has no internet access, the graph visualization won't render.
+The backend is **100% local** - no internet required. However, the graph panel loads **D3.js from a CDN** on first use. If your HA instance has no internet access, the graph visualization won't render.
 
 Bundling D3.js locally is planned for a future release to support fully air-gapped installations.
 </details>
@@ -635,22 +655,22 @@ If installed via HACS, use HACS to remove it instead of manually deleting files.
 
 ## Limitations & Known Tradeoffs
 
-- **Template extraction is regex-based** — Complex Jinja2 templates with macros, `set` variables, or dynamic entity IDs may be missed. EntityMap marks extracted references as "inferred" confidence.
-- **Automation configs accessed via HA APIs** — EntityMap reads automation configurations through HA component APIs, not raw YAML files. If HA changes these internal APIs, adapters may need updating.
-- **Entity availability is a point-in-time snapshot** — The `available` flag reflects status at scan time, not real-time.
-- **Graph clips at 500 nodes** — For browser performance. Use search and filters on large installations.
-- **D3.js loaded from CDN** — Requires internet on first panel load. Offline bundling is planned.
-- **Single config entry** — Only one EntityMap instance per HA installation.
+- **Template extraction is regex-based** - Complex Jinja2 templates with macros, `set` variables, or dynamic entity IDs may be missed. EntityMap marks extracted references as "inferred" confidence.
+- **Automation configs accessed via HA APIs** - EntityMap reads automation configurations through HA component APIs, not raw YAML files. If HA changes these internal APIs, adapters may need updating.
+- **Entity availability is a point-in-time snapshot** - The `available` flag reflects status at scan time, not real-time.
+- **Graph clips at 500 nodes** - For browser performance. Use search and filters on large installations.
+- **D3.js loaded from CDN** - Requires internet on first panel load. Offline bundling is planned.
+- **Single config entry** - Only one EntityMap instance per HA installation.
 
 ---
 
 ## Privacy & Security
 
-- **All processing is local** — No data is sent to external services
-- **No telemetry** — EntityMap does not collect or transmit usage data
-- **Read-only** — EntityMap never modifies your automations, scripts, scenes, or any configuration
-- **Diagnostics are redacted** — Entity IDs are anonymized in diagnostics downloads
-- **Network activity** — Only the frontend panel loads D3.js from `cdn.jsdelivr.net` on first use
+- **All processing is local** - No data is sent to external services
+- **No telemetry** - EntityMap does not collect or transmit usage data
+- **Read-only** - EntityMap never modifies your automations, scripts, scenes, or any configuration
+- **Diagnostics are redacted** - Entity IDs are anonymized in diagnostics downloads
+- **Network activity** - Only the frontend panel loads D3.js from `cdn.jsdelivr.net` on first use
 
 ---
 
@@ -681,9 +701,9 @@ This approach avoids the overhead of DataUpdateCoordinator (not suitable for loc
 
 ### Direct vs Inferred Dependencies
 
-- **Direct** (high confidence) — Entity explicitly referenced by ID in a trigger, condition, action, or target
-- **Inferred** (medium confidence) — Entity reference extracted from a Jinja2 template via regex
-- **Low confidence** — Heuristic matches that may have false positives
+- **Direct** (high confidence) - Entity explicitly referenced by ID in a trigger, condition, action, or target
+- **Inferred** (medium confidence) - Entity reference extracted from a Jinja2 template via regex
+- **Low confidence** - Heuristic matches that may have false positives
 
 ---
 
@@ -711,74 +731,74 @@ All tests follow the **GIVEN / WHEN / THEN** convention.
 
 | Module | Tests | Status |
 |---|---|---|
-| **Analysis** — impact analysis engine | 11 | ✅ |
-| **Config Flow** — UI setup & options | 6 | ✅ |
-| **Diagnostics** — diagnostics export | 4 | ✅ |
-| **Fragility** — fragility detection | 14 | ✅ |
-| **Graph** — graph builder lifecycle | 6 | ✅ |
-| **Migration** — migration suggestions | 9 | ✅ |
-| **Models** — domain models & serialization | 33 | ✅ |
+| **Analysis** - impact analysis engine | 11 | ✅ |
+| **Config Flow** - UI setup & options | 6 | ✅ |
+| **Diagnostics** - diagnostics export | 4 | ✅ |
+| **Fragility** - fragility detection | 14 | ✅ |
+| **Graph** - graph builder lifecycle | 6 | ✅ |
+| **Migration** - migration suggestions | 9 | ✅ |
+| **Models** - domain models & serialization | 33 | ✅ |
 | **Total** | **83** | **✅ All passing** |
 
 <details>
 <summary>Full test breakdown by scenario class</summary>
 
 **Analysis** (`test_analysis.py`)
-- `TestImpactOnNonexistentNode` — 2 tests
-- `TestImpactOnEntityWithDependents` — 3 tests
-- `TestImpactOnDevice` — 2 tests
-- `TestImpactOnHelper` — 1 test
-- `TestImpactOnIsolatedNode` — 2 tests
-- `TestImpactRiskScoring` — 1 test
+- `TestImpactOnNonexistentNode` - 2 tests
+- `TestImpactOnEntityWithDependents` - 3 tests
+- `TestImpactOnDevice` - 2 tests
+- `TestImpactOnHelper` - 1 test
+- `TestImpactOnIsolatedNode` - 2 tests
+- `TestImpactRiskScoring` - 1 test
 
 **Config Flow** (`test_config_flow.py`)
-- `TestConfigFlowUserStep` — 3 tests
-- `TestOptionsFlowInit` — 3 tests
+- `TestConfigFlowUserStep` - 3 tests
+- `TestOptionsFlowInit` - 3 tests
 
 **Diagnostics** (`test_diagnostics.py`)
-- `TestDiagnosticsOutput` — 2 tests
-- `TestDiagnosticsPrivacy` — 1 test
-- `TestDiagnosticsWithFindings` — 1 test
+- `TestDiagnosticsOutput` - 2 tests
+- `TestDiagnosticsPrivacy` - 1 test
+- `TestDiagnosticsWithFindings` - 1 test
 
 **Fragility** (`test_fragility.py`)
-- `TestCleanGraph` — 2 tests
-- `TestMissingEntityReference` — 2 tests
-- `TestMissingDeviceReference` — 1 test
-- `TestDeviceIdUsage` — 2 tests
-- `TestDisabledReference` — 2 tests
-- `TestTightDeviceCoupling` — 2 tests
-- `TestHiddenDependency` — 2 tests
-- `TestFindingIdStability` — 1 test
+- `TestCleanGraph` - 2 tests
+- `TestMissingEntityReference` - 2 tests
+- `TestMissingDeviceReference` - 1 test
+- `TestDeviceIdUsage` - 2 tests
+- `TestDisabledReference` - 2 tests
+- `TestTightDeviceCoupling` - 2 tests
+- `TestHiddenDependency` - 2 tests
+- `TestFindingIdStability` - 1 test
 
 **Graph** (`test_graph.py`)
-- `TestGraphBuilderInitialState` — 2 tests
-- `TestGraphBuilderBuild` — 2 tests
-- `TestGraphBuilderSerialization` — 2 tests
+- `TestGraphBuilderInitialState` - 2 tests
+- `TestGraphBuilderBuild` - 2 tests
+- `TestGraphBuilderSerialization` - 2 tests
 
 **Migration** (`test_migration.py`)
-- `TestMigrationForNonexistentNode` — 1 test
-- `TestMigrationForIsolatedNode` — 1 test
-- `TestMigrationForTriggerDependency` — 2 tests
-- `TestMigrationForDeviceReplacement` — 2 tests
-- `TestMigrationForSceneMembers` — 1 test
-- `TestMigrationForGroupMembers` — 1 test
-- `TestMigrationForMultipleDependencies` — 1 test
+- `TestMigrationForNonexistentNode` - 1 test
+- `TestMigrationForIsolatedNode` - 1 test
+- `TestMigrationForTriggerDependency` - 2 tests
+- `TestMigrationForDeviceReplacement` - 2 tests
+- `TestMigrationForSceneMembers` - 1 test
+- `TestMigrationForGroupMembers` - 1 test
+- `TestMigrationForMultipleDependencies` - 1 test
 
 **Models** (`test_models.py`)
-- `TestGraphNodeCreation` — 3 tests
-- `TestGraphNodeSerialization` — 2 tests
-- `TestGraphNodeImmutability` — 2 tests
-- `TestGraphEdgeCreation` — 2 tests
-- `TestGraphEdgeSerialization` — 1 test
-- `TestGraphNodeOperations` — 3 tests
-- `TestGraphEdgeOperations` — 4 tests
-- `TestGraphDependencyQueries` — 3 tests
-- `TestGraphTransitiveTraversal` — 2 tests
-- `TestGraphNeighborhood` — 3 tests
-- `TestGraphLifecycle` — 2 tests
-- `TestFragilityFindingSerialization` — 2 tests
-- `TestImpactReportSerialization` — 2 tests
-- `TestMigrationSuggestionSerialization` — 2 tests
+- `TestGraphNodeCreation` - 3 tests
+- `TestGraphNodeSerialization` - 2 tests
+- `TestGraphNodeImmutability` - 2 tests
+- `TestGraphEdgeCreation` - 2 tests
+- `TestGraphEdgeSerialization` - 1 test
+- `TestGraphNodeOperations` - 3 tests
+- `TestGraphEdgeOperations` - 4 tests
+- `TestGraphDependencyQueries` - 3 tests
+- `TestGraphTransitiveTraversal` - 2 tests
+- `TestGraphNeighborhood` - 3 tests
+- `TestGraphLifecycle` - 2 tests
+- `TestFragilityFindingSerialization` - 2 tests
+- `TestImpactReportSerialization` - 2 tests
+- `TestMigrationSuggestionSerialization` - 2 tests
 
 </details>
 
@@ -797,18 +817,27 @@ mypy custom_components/entitymap --ignore-missing-imports
 
 ---
 
-## Contributing
+## Release Notes
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, architecture guidelines, and testing philosophy.
+See [CHANGELOG.md](CHANGELOG.md) for release history. EntityMap follows [Semantic Versioning](https://semver.org/).
+
+## Author
+
+Created and maintained by **[POLPROG](https://polprog.pl/)** ([@polprog-tech](https://github.com/polprog-tech)).
+
+- **Report issues:** [GitHub Issues](https://github.com/polprog-tech/EntityMap/issues)
+- **Feature requests:** [GitHub Discussions](https://github.com/polprog-tech/EntityMap/discussions)
+- **Documentation:** [docs/architecture.md](docs/architecture.md)
 
 ---
+
+## Contributing & Community
+
+- [Contributing Guide](CONTRIBUTING.md) - development setup, code style, PR guidance
+- [Code of Conduct](CODE_OF_CONDUCT.md) - expected behavior for contributors and maintainers
+- [Security Policy](SECURITY.md) - how to privately report security vulnerabilities
+- [Changelog](CHANGELOG.md) - release history and notable changes
 
 ## License
 
-MIT License — see [LICENSE](LICENSE).
-
----
-
-## Changelog
-
-See [CHANGELOG.md](CHANGELOG.md).
+This project is licensed under the [MIT License](LICENSE).

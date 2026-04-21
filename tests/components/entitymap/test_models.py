@@ -30,8 +30,9 @@ from custom_components.entitymap.models import (
 class TestGraphNodeCreation:
     """Scenarios for creating graph nodes."""
 
+    """GIVEN an entity node with minimal fields."""
     def test_entity_node_has_correct_defaults(self):
-        """GIVEN an entity node with minimal fields."""
+
         node = GraphNode(
             node_id="light.living_room",
             node_type=NodeType.ENTITY,
@@ -47,8 +48,9 @@ class TestGraphNodeCreation:
         assert node.disabled is False
         assert node.metadata == {}
 
+    """GIVEN a device node with a device_id."""
     def test_device_node_carries_device_id(self):
-        """GIVEN a device node with a device_id."""
+
         node = GraphNode(
             node_id="device.abc123",
             node_type=NodeType.DEVICE,
@@ -60,8 +62,9 @@ class TestGraphNodeCreation:
         assert node.device_id == "abc123"
         assert node.node_type == NodeType.DEVICE
 
+    """GIVEN a disabled entity represented as a node."""
     def test_disabled_node_preserves_state(self):
-        """GIVEN a disabled entity represented as a node."""
+
         node = GraphNode(
             node_id="switch.old",
             node_type=NodeType.ENTITY,
@@ -77,8 +80,9 @@ class TestGraphNodeCreation:
 class TestGraphNodeSerialization:
     """Scenarios for node serialization to dict."""
 
+    """GIVEN a fully populated node."""
     def test_as_dict_includes_all_fields(self):
-        """GIVEN a fully populated node."""
+
         node = GraphNode(
             node_id="device.abc123",
             node_type=NodeType.DEVICE,
@@ -97,8 +101,9 @@ class TestGraphNodeSerialization:
         assert d["device_id"] == "abc123"
         assert d["area_id"] == "living_room"
 
+    """GIVEN a node with no optional fields."""
     def test_as_dict_none_fields_are_none(self):
-        """GIVEN a node with no optional fields."""
+
         node = GraphNode("test.x", NodeType.UNKNOWN, "X")
 
         """WHEN serialized."""
@@ -113,8 +118,9 @@ class TestGraphNodeSerialization:
 class TestGraphNodeImmutability:
     """Scenarios verifying frozen dataclass behavior."""
 
+    """GIVEN a frozen GraphNode."""
     def test_cannot_modify_title(self):
-        """GIVEN a frozen GraphNode."""
+
         node = GraphNode("test.node", NodeType.ENTITY, "Test")
 
         """WHEN attempting to modify a field."""
@@ -123,8 +129,9 @@ class TestGraphNodeImmutability:
         with pytest.raises(AttributeError):
             node.title = "Changed"
 
+    """GIVEN a frozen GraphNode."""
     def test_cannot_modify_node_type(self):
-        """GIVEN a frozen GraphNode."""
+
         node = GraphNode("test.node", NodeType.ENTITY, "Test")
 
         """WHEN attempting to change node_type."""
@@ -140,8 +147,9 @@ class TestGraphNodeImmutability:
 class TestGraphEdgeCreation:
     """Scenarios for creating graph edges."""
 
+    """GIVEN an edge with no explicit confidence."""
     def test_edge_defaults_to_high_confidence(self):
-        """GIVEN an edge with no explicit confidence."""
+
         edge = GraphEdge(
             source="automation.test",
             target="light.living_room",
@@ -153,8 +161,9 @@ class TestGraphEdgeCreation:
         assert edge.target == "light.living_room"
         assert edge.confidence == Confidence.HIGH
 
+    """GIVEN an edge with LOW confidence."""
     def test_edge_with_explicit_confidence(self):
-        """GIVEN an edge with LOW confidence."""
+
         edge = GraphEdge(
             source="automation.a",
             target="sensor.b",
@@ -171,8 +180,9 @@ class TestGraphEdgeCreation:
 class TestGraphEdgeSerialization:
     """Scenarios for edge serialization."""
 
+    """GIVEN an edge with enum fields."""
     def test_as_dict_serializes_enums_as_strings(self):
-        """GIVEN an edge with enum fields."""
+
         edge = GraphEdge(
             source="automation.test",
             target="light.living_room",
@@ -195,8 +205,9 @@ class TestGraphEdgeSerialization:
 class TestGraphNodeOperations:
     """Scenarios for adding and querying nodes."""
 
+    """GIVEN an empty graph."""
     def test_add_single_node(self, empty_graph):
-        """GIVEN an empty graph."""
+
         graph = empty_graph
 
         """WHEN a node is added."""
@@ -206,8 +217,9 @@ class TestGraphNodeOperations:
         assert graph.node_count == 1
         assert "light.test" in graph.nodes
 
+    """GIVEN a graph with a node."""
     def test_add_duplicate_node_overwrites(self, empty_graph):
-        """GIVEN a graph with a node."""
+
         graph = empty_graph
         graph.add_node(GraphNode("light.test", NodeType.ENTITY, "Old"))
 
@@ -218,8 +230,8 @@ class TestGraphNodeOperations:
         assert graph.node_count == 1
         assert graph.nodes["light.test"].title == "New"
 
+    """GIVEN a freshly created graph."""
     def test_empty_graph_has_zero_counts(self, empty_graph):
-        """GIVEN a freshly created graph."""
 
         """THEN node and edge counts are zero."""
         assert empty_graph.node_count == 0
@@ -229,8 +241,9 @@ class TestGraphNodeOperations:
 class TestGraphEdgeOperations:
     """Scenarios for adding edges and querying relationships."""
 
+    """GIVEN two nodes in a graph."""
     def test_add_edge_between_nodes(self, empty_graph):
-        """GIVEN two nodes in a graph."""
+
         graph = empty_graph
         graph.add_node(GraphNode("a", NodeType.AUTOMATION, "Auto A"))
         graph.add_node(GraphNode("b", NodeType.ENTITY, "Entity B"))
@@ -241,8 +254,9 @@ class TestGraphEdgeOperations:
         """THEN the edge count increments."""
         assert graph.edge_count == 1
 
+    """GIVEN an edge from automation → entity."""
     def test_inbound_edges_point_to_target(self, empty_graph):
-        """GIVEN an edge from automation → entity."""
+
         graph = empty_graph
         graph.add_node(GraphNode("a", NodeType.AUTOMATION, "Auto"))
         graph.add_node(GraphNode("b", NodeType.ENTITY, "Entity"))
@@ -255,8 +269,9 @@ class TestGraphEdgeOperations:
         assert len(inbound) == 1
         assert inbound[0].source == "a"
 
+    """GIVEN an edge from automation → entity."""
     def test_outbound_edges_point_from_source(self, empty_graph):
-        """GIVEN an edge from automation → entity."""
+
         graph = empty_graph
         graph.add_node(GraphNode("a", NodeType.AUTOMATION, "Auto"))
         graph.add_node(GraphNode("b", NodeType.ENTITY, "Entity"))
@@ -269,8 +284,8 @@ class TestGraphEdgeOperations:
         assert len(outbound) == 1
         assert outbound[0].target == "b"
 
+    """GIVEN an empty graph."""
     def test_inbound_on_unknown_node_returns_empty(self, empty_graph):
-        """GIVEN an empty graph."""
 
         """WHEN querying inbound edges for a nonexistent node."""
 
@@ -281,8 +296,9 @@ class TestGraphEdgeOperations:
 class TestGraphDependencyQueries:
     """Scenarios for dependent/dependency lookups."""
 
+    """GIVEN an entity with two automations pointing to it."""
     def test_get_dependents_returns_all_sources(self, empty_graph):
-        """GIVEN an entity with two automations pointing to it."""
+
         graph = empty_graph
         graph.add_node(GraphNode("a", NodeType.AUTOMATION, "Auto A"))
         graph.add_node(GraphNode("b", NodeType.AUTOMATION, "Auto B"))
@@ -296,8 +312,9 @@ class TestGraphDependencyQueries:
         """THEN both automation IDs are returned."""
         assert deps == {"a", "b"}
 
+    """GIVEN an automation depending on two entities."""
     def test_get_dependencies_returns_all_targets(self, empty_graph):
-        """GIVEN an automation depending on two entities."""
+
         graph = empty_graph
         graph.add_node(GraphNode("a", NodeType.AUTOMATION, "Auto"))
         graph.add_node(GraphNode("b", NodeType.ENTITY, "Trigger"))
@@ -311,8 +328,9 @@ class TestGraphDependencyQueries:
         """THEN both entity IDs are returned."""
         assert deps == {"b", "c"}
 
+    """GIVEN an isolated node with no inbound edges."""
     def test_dependents_of_isolated_node_is_empty(self, empty_graph):
-        """GIVEN an isolated node with no inbound edges."""
+
         graph = empty_graph
         graph.add_node(GraphNode("x", NodeType.ENTITY, "Isolated"))
 
@@ -325,8 +343,9 @@ class TestGraphDependencyQueries:
 class TestGraphTransitiveTraversal:
     """Scenarios for multi-hop transitive dependency traversal."""
 
+    """GIVEN a chain C ← B ← A."""
     def test_transitive_dependents_follows_chain(self, empty_graph):
-        """GIVEN a chain C ← B ← A."""
+
         graph = empty_graph
         graph.add_node(GraphNode("a", NodeType.AUTOMATION, "A"))
         graph.add_node(GraphNode("b", NodeType.SCRIPT, "B"))
@@ -341,8 +360,9 @@ class TestGraphTransitiveTraversal:
         assert "b" in trans
         assert "a" in trans
 
+    """GIVEN a cycle A → B → A."""
     def test_transitive_dependents_handles_cycles(self, empty_graph):
-        """GIVEN a cycle A → B → A."""
+
         graph = empty_graph
         graph.add_node(GraphNode("a", NodeType.AUTOMATION, "A"))
         graph.add_node(GraphNode("b", NodeType.AUTOMATION, "B"))
@@ -359,8 +379,9 @@ class TestGraphTransitiveTraversal:
 class TestGraphNeighborhood:
     """Scenarios for neighborhood extraction."""
 
+    """GIVEN a linear chain A→B, A→C→D."""
     def test_neighborhood_depth_1_excludes_distant_nodes(self, empty_graph):
-        """GIVEN a linear chain A→B, A→C→D."""
+
         graph = empty_graph
         graph.add_node(GraphNode("a", NodeType.AUTOMATION, "A"))
         graph.add_node(GraphNode("b", NodeType.ENTITY, "B"))
@@ -379,8 +400,9 @@ class TestGraphNeighborhood:
         assert "c" in nodes
         assert "d" not in nodes
 
+    """GIVEN a chain A→C→D."""
     def test_neighborhood_depth_2_reaches_distant_nodes(self, empty_graph):
-        """GIVEN a chain A→C→D."""
+
         graph = empty_graph
         graph.add_node(GraphNode("a", NodeType.AUTOMATION, "A"))
         graph.add_node(GraphNode("c", NodeType.ENTITY, "C"))
@@ -394,8 +416,9 @@ class TestGraphNeighborhood:
         """THEN D is included."""
         assert "d" in nodes
 
+    """GIVEN a node with no edges."""
     def test_neighborhood_of_isolated_node_returns_only_self(self, empty_graph):
-        """GIVEN a node with no edges."""
+
         graph = empty_graph
         graph.add_node(GraphNode("x", NodeType.ENTITY, "Isolated"))
 
@@ -410,8 +433,9 @@ class TestGraphNeighborhood:
 class TestGraphLifecycle:
     """Scenarios for graph clearing and serialization."""
 
+    """GIVEN a graph with nodes and edges."""
     def test_clear_empties_all_collections(self, empty_graph):
-        """GIVEN a graph with nodes and edges."""
+
         graph = empty_graph
         graph.add_node(GraphNode("a", NodeType.ENTITY, "A"))
         graph.add_node(GraphNode("b", NodeType.ENTITY, "B"))
@@ -424,8 +448,9 @@ class TestGraphLifecycle:
         assert graph.node_count == 0
         assert graph.edge_count == 0
 
+    """GIVEN a graph with one node."""
     def test_as_dict_serializes_full_graph(self, empty_graph):
-        """GIVEN a graph with one node."""
+
         graph = empty_graph
         graph.add_node(GraphNode("a", NodeType.ENTITY, "A"))
 
@@ -445,8 +470,9 @@ class TestGraphLifecycle:
 class TestFragilityFindingSerialization:
     """Scenarios for fragility finding serialization."""
 
+    """GIVEN a fragility finding with enum types."""
     def test_as_dict_serializes_all_enum_fields(self):
-        """GIVEN a fragility finding with enum types."""
+
         finding = FragilityFinding(
             finding_id="test123",
             fragility_type=FragilityType.MISSING_ENTITY,
@@ -466,8 +492,9 @@ class TestFragilityFindingSerialization:
         assert d["severity"] == "high"
         assert d["related_node_ids"] == ["light.missing"]
 
+    """GIVEN a finding with no related nodes."""
     def test_empty_related_nodes_serializes_to_empty_list(self):
-        """GIVEN a finding with no related nodes."""
+
         finding = FragilityFinding(
             finding_id="abc",
             fragility_type=FragilityType.DEVICE_ID_REFERENCE,
@@ -488,8 +515,9 @@ class TestFragilityFindingSerialization:
 class TestImpactReportSerialization:
     """Scenarios for impact report serialization."""
 
+    """GIVEN an impact report with affected types."""
     def test_as_dict_includes_risk_and_affected_types(self):
-        """GIVEN an impact report with affected types."""
+
         report = ImpactReport(
             target_node_id="light.test",
             affected_nodes=("automation.a",),
@@ -507,8 +535,9 @@ class TestImpactReportSerialization:
         assert d["affected_by_type"]["automation"] == 1
         assert d["severity"] == "medium"
 
+    """GIVEN an impact report with no affected nodes."""
     def test_empty_report_serializes_cleanly(self):
-        """GIVEN an impact report with no affected nodes."""
+
         report = ImpactReport(target_node_id="x.y")
 
         """WHEN serialized."""
@@ -526,8 +555,9 @@ class TestImpactReportSerialization:
 class TestMigrationSuggestionSerialization:
     """Scenarios for migration suggestion serialization."""
 
+    """GIVEN a migration suggestion with all fields."""
     def test_as_dict_includes_all_fields(self):
-        """GIVEN a migration suggestion with all fields."""
+
         suggestion = MigrationSuggestion(
             description="Test suggestion",
             affected_items=("automation.a",),
@@ -542,8 +572,9 @@ class TestMigrationSuggestionSerialization:
         assert len(d["affected_items"]) == 1
         assert d["recommendation"] == "Do this"
 
+    """GIVEN a suggestion with only a description."""
     def test_minimal_suggestion_has_empty_defaults(self):
-        """GIVEN a suggestion with only a description."""
+
         suggestion = MigrationSuggestion(description="Simple note")
 
         """WHEN serialized."""

@@ -6,20 +6,35 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.12"
+
 jobs:
   lint:
-    name: Lint
+    name: Lint & Format
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
       - name: Install ruff
         run: pip install ruff
-      - name: Run ruff check
+
+      - name: Ruff lint
         run: ruff check .
-      - name: Run ruff format check
+
+      - name: Ruff format check
         run: ruff format --check .
 
   type-check:
@@ -27,28 +42,45 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
       - name: Install dependencies
         run: |
-          pip install mypy
-          pip install homeassistant
+          pip install mypy homeassistant
           pip install -r requirements_test.txt
+
       - name: Run mypy
         run: mypy custom_components/entitymap --ignore-missing-imports
         continue-on-error: true
 
   test:
-    name: Test
+    name: Test (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
       - name: Install dependencies
-        run: |
-          pip install -r requirements_test.txt
+        run: pip install -r requirements_test.txt
+
       - name: Run tests
-        run: pytest tests/ -v --cov=custom_components/entitymap --cov-report=term-missing
+        run: pytest tests/ -v --tb=short --cov=custom_components/entitymap --cov-report=term-missing --junitxml=test-results.xml
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-py${{ matrix.python-version }}
+          path: test-results.xml

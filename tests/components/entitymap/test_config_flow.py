@@ -36,9 +36,9 @@ class TestConfigFlowUserStep:
         flow.context = {"source": "user"}
         return flow
 
+    """GIVEN a user starting configuration."""
     @pytest.mark.asyncio
     async def test_shows_form_when_no_input(self, flow):
-        """GIVEN a user starting configuration."""
 
         """WHEN no input has been provided."""
         with patch.object(flow, "async_set_unique_id", return_value=None):
@@ -49,9 +49,10 @@ class TestConfigFlowUserStep:
         assert result["type"] == "form"
         assert result["step_id"] == "user"
 
+    """GIVEN valid user input with all options."""
     @pytest.mark.asyncio
     async def test_creates_entry_with_valid_input(self, flow):
-        """GIVEN valid user input with all options."""
+
         user_input = {
             CONF_SCAN_ON_STARTUP: True,
             CONF_AUTO_REFRESH: True,
@@ -73,9 +74,10 @@ class TestConfigFlowUserStep:
         assert options[CONF_SCAN_ON_STARTUP] is True
         assert options[CONF_AUTO_REFRESH] is True
 
+    """GIVEN user input with only required fields set to False."""
     @pytest.mark.asyncio
     async def test_creates_entry_with_minimal_input(self, flow):
-        """GIVEN user input with only required fields set to False."""
+
         user_input = {
             CONF_SCAN_ON_STARTUP: False,
             CONF_AUTO_REFRESH: False,
@@ -115,9 +117,9 @@ class TestOptionsFlowInit:
         ):
             yield flow
 
+    """GIVEN an existing config entry."""
     @pytest.mark.asyncio
     async def test_shows_form_with_current_values(self, options_flow):
-        """GIVEN an existing config entry."""
 
         """WHEN the options flow starts."""
         result = await options_flow.async_step_init(user_input=None)
@@ -126,9 +128,10 @@ class TestOptionsFlowInit:
         assert result["type"] == "form"
         assert result["step_id"] == "init"
 
+    """GIVEN the user modifies options."""
     @pytest.mark.asyncio
     async def test_saves_updated_options(self, options_flow):
-        """GIVEN the user modifies options."""
+
         user_input = {
             CONF_SCAN_ON_STARTUP: False,
             CONF_AUTO_REFRESH: True,
@@ -144,9 +147,10 @@ class TestOptionsFlowInit:
         """THEN the new options are saved via async_create_entry."""
         mock_create.assert_called_once_with(data=user_input)
 
+    """GIVEN full options input."""
     @pytest.mark.asyncio
     async def test_preserves_all_fields_on_save(self, options_flow):
-        """GIVEN full options input."""
+
         user_input = {
             CONF_SCAN_ON_STARTUP: True,
             CONF_AUTO_REFRESH: False,

@@ -19,6 +19,13 @@ Issues = "https://github.com/polprog-tech/EntityMap/issues"
 target-version = "py312"
 line-length = 100
 
+[tool.ruff.format]
+# Test files use a strict GIVEN/WHEN/THEN docstring layout (floating string
+# literal directly above `def` with no blank line) that the formatter would
+# otherwise rewrite. The convention is enforced by project style and verified
+# by code review.
+exclude = ["tests/**/*.py"]
+
 [tool.ruff.lint]
 select = [
     "A",      # flake8-builtins
@@ -48,6 +55,7 @@ known-first-party = ["custom_components.entitymap"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
 filterwarnings = [
     "ignore::pytest.PytestUnraisableExceptionWarning",
 ]

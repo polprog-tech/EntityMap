@@ -1,4 +1,4 @@
-"""The EntityMap integration — dependency mapping and impact analysis for Home Assistant."""
+"""The EntityMap integration - dependency mapping and impact analysis for Home Assistant."""
 
 from __future__ import annotations
 
@@ -72,7 +72,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: EntityMapConfigEntry) ->
         except Exception:  # noqa: BLE001
             _LOGGER.debug("EntityMap panel view already registered")
 
-    # Register the frontend sidebar panel (idempotent — overwrites if exists)
+    # Register the frontend sidebar panel (idempotent - overwrites if exists)
     try:
         await _async_register_panel(hass)
     except Exception:  # noqa: BLE001
@@ -131,7 +131,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: EntityMapConfigEntry) ->
 
 
 async def _async_update_options(hass: HomeAssistant, entry: EntityMapConfigEntry) -> None:
-    """Handle options update — reload the integration."""
+    """Handle options update - reload the integration."""
     await hass.config_entries.async_reload(entry.entry_id)
 
 
@@ -469,7 +469,7 @@ def _build_hierarchy(graph: Any) -> dict[str, Any]:
     result_areas = []
     for area_id, area in areas.items():
         # Attach devices that belong to this area
-        for _, dev in devices.items():
+        for dev in devices.values():
             if dev["area_id"] == area_id:
                 area["devices"].append(dev)
         # Attach direct entities (not via device)

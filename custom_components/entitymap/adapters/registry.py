@@ -1,4 +1,4 @@
-"""Registry adapter — devices, entities, and areas from HA registries."""
+"""Registry adapter - devices, entities, and areas from HA registries."""
 
 from __future__ import annotations
 

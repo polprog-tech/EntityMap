@@ -1,4 +1,4 @@
-"""Automation adapter — parse automation configs for dependency edges."""
+"""Automation adapter - parse automation configs for dependency edges."""
 
 from __future__ import annotations
 
@@ -14,8 +14,6 @@ from .base import SourceAdapter
 
 _LOGGER = logging.getLogger(__name__)
 
-ENTITY_ID_PATTERN = re.compile(r"\b([a-z_]+\.[a-z0-9_]+)\b")
-
 
 class AutomationAdapter(SourceAdapter):
     """Extract dependency edges from automation configurations."""
@@ -23,12 +21,8 @@ class AutomationAdapter(SourceAdapter):
     async def async_populate(self, graph: DependencyGraph) -> None:
         """Scan automations and add edges to the graph."""
         states = self.hass.states.async_all("automation")
-        component_data = self.hass.data.get("automation")
 
         configs: list[tuple[str, dict[str, Any]]] = []
-        if component_data and hasattr(component_data, "async_get_automations"):
-            # Prefer component API if available
-            pass
 
         # Use the collection store if accessible
         store = _get_automation_store(self.hass)
@@ -117,7 +111,7 @@ class AutomationAdapter(SourceAdapter):
                 )
             )
 
-        # Template triggers — extract entity references from templates
+        # Template triggers - extract entity references from templates
         if platform == "template":
             value_template = trigger.get("value_template", "")
             for ref in _extract_template_refs(str(value_template)):

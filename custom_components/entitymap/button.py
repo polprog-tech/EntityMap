@@ -62,5 +62,5 @@ class EntityMapRescanButton(ButtonEntity):
         return self._canonical_object_id
 
     async def async_press(self) -> None:
-        """Handle button press — trigger a full rescan."""
+        """Handle button press - trigger a full rescan."""
         await self._builder.async_build()
