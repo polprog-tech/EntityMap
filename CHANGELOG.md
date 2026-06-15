@@ -5,6 +5,12 @@ All notable changes to EntityMap will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2026-06-15
+
+### Fixed
+
+- Sidebar panel failing to open with "Unable to load custom panel" and repeated invalid authentication entries in the HTTP ban log. The view serving the panel JavaScript no longer requires authentication, so the browser can import it as a module ([#1](https://github.com/polprog-tech/EntityMap/issues/1)).
+
 ## [1.0.0] - 2025-03-13
 
 ### Added

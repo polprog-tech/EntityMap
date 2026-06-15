@@ -15,7 +15,11 @@ class EntityMapPanelView(HomeAssistantView):
 
     url = "/api/panel_custom/entitymap"
     name = "api:panel_custom:entitymap"
-    requires_auth = True
+    # The frontend imports this module via a plain <script type="module">, which
+    # carries no auth token. Requiring auth makes the import fail with an invalid
+    # authentication error (and trips the HTTP ban component), so the panel never
+    # loads. The file is public frontend code with no secrets, so serve it openly.
+    requires_auth = False
 
     async def get(self, request: web.Request) -> web.Response:
         """Serve the panel JS file."""
