@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections import Counter
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
@@ -26,21 +27,9 @@ async def async_get_config_entry_diagnostics(
             return f"{domain}.***"
         return "***"
 
-    node_summary: dict[str, int] = {}
-    for node in graph.nodes.values():
-        node_summary[node.node_type.value] = node_summary.get(node.node_type.value, 0) + 1
-
-    edge_summary: dict[str, int] = {}
-    for edge in graph.edges:
-        edge_summary[edge.dependency_kind.value] = (
-            edge_summary.get(edge.dependency_kind.value, 0) + 1
-        )
-
-    finding_summary: dict[str, int] = {}
-    for finding in findings:
-        finding_summary[finding.fragility_type.value] = (
-            finding_summary.get(finding.fragility_type.value, 0) + 1
-        )
+    node_summary = dict(Counter(node.node_type.value for node in graph.nodes.values()))
+    edge_summary = dict(Counter(edge.dependency_kind.value for edge in graph.edges))
+    finding_summary = dict(Counter(finding.fragility_type.value for finding in findings))
 
     return {
         "config_entry": {

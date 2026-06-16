@@ -13,6 +13,7 @@ from .const import (
     ATTR_NODE_ID,
     DOMAIN,
     SERVICE_ANALYZE_IMPACT,
+    SERVICE_EXPORT,
     SERVICE_GET_DEPENDENCIES,
     SERVICE_SCAN,
     Confidence,
@@ -38,6 +39,10 @@ async def async_register_services(hass: HomeAssistant, builder: GraphBuilder) ->
         node_id = call.data[ATTR_NODE_ID]
         report = analyze_impact(builder.graph, node_id)
         return report.as_dict()
+
+    async def handle_export(call: ServiceCall) -> ServiceResponse:
+        """Handle the export service call - return the full graph and findings."""
+        return builder.export_data()
 
     async def handle_get_dependencies(call: ServiceCall) -> ServiceResponse:
         """Handle the get_dependencies service call."""
@@ -76,6 +81,12 @@ async def async_register_services(hass: HomeAssistant, builder: GraphBuilder) ->
     )
     hass.services.async_register(
         DOMAIN,
+        SERVICE_EXPORT,
+        handle_export,
+        supports_response=SupportsResponse.ONLY,
+    )
+    hass.services.async_register(
+        DOMAIN,
         SERVICE_ANALYZE_IMPACT,
         handle_analyze_impact,
         schema=vol.Schema({vol.Required(ATTR_NODE_ID): str}),
@@ -98,5 +109,6 @@ async def async_register_services(hass: HomeAssistant, builder: GraphBuilder) ->
 async def async_unregister_services(hass: HomeAssistant) -> None:
     """Unregister EntityMap services."""
     hass.services.async_remove(DOMAIN, SERVICE_SCAN)
+    hass.services.async_remove(DOMAIN, SERVICE_EXPORT)
     hass.services.async_remove(DOMAIN, SERVICE_ANALYZE_IMPACT)
     hass.services.async_remove(DOMAIN, SERVICE_GET_DEPENDENCIES)

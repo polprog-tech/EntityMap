@@ -21,10 +21,12 @@ EntityMap does **not** use `DataUpdateCoordinator`. Here's why:
 
 ### How It Works
 
-1. **Startup scan**: After `EVENT_HOMEASSISTANT_STARTED`, a full graph build runs (if enabled)
-2. **Event-driven refresh**: Listens to `entity_registry_updated` and `device_registry_updated` events; triggers rebuild
+1. **Startup scan**: Runs immediately when Home Assistant is already running (e.g. the integration is added at runtime), otherwise on `EVENT_HOMEASSISTANT_STARTED` - via `homeassistant.helpers.start.async_at_started`
+2. **Event-driven refresh**: Listens to `entity_registry_updated` and `device_registry_updated`; rebuilds are debounced so a burst of changes collapses into a single scan
 3. **Periodic reconciliation**: Timer-based full rescan at configurable intervals (default: 6 hours)
 4. **Manual rescan**: Button entity or `entitymap.scan` service
+
+Each scan computes fragility findings once and caches them on the builder (reused by the sensors, panel, and repairs), and records the scan's status, duration, and adapter-error count (exposed as attributes on the **Last scan** sensor).
 
 ## Graph Model
 
@@ -61,7 +63,7 @@ GroupAdapter        - group member entities
 TemplateAdapter     - template entity Jinja2 references
 ```
 
-Adapters run sequentially. `RegistryAdapter` must run first to establish base nodes; others add edges and placeholder nodes for missing references.
+Adapters run sequentially. `RegistryAdapter` must run first to establish base nodes; others add edges and placeholder nodes for missing references. The automation and script adapters share parsing helpers (`adapters/_config_parse.py`: list coercion, entity-id extraction, template-reference scanning, nested-action iteration). The WebSocket API lives in `websocket.py` and the area → device → entity tree builder in `hierarchy.py`.
 
 ## Fragility Analysis
 
@@ -85,15 +87,16 @@ Impact analysis combines:
 
 ## Frontend
 
-The panel is a vanilla Web Component (`HTMLElement` with Shadow DOM):
-- **D3.js** force simulation for graph layout
-- **SVG** rendering for crisp scaling
-- Node shapes/colors distinguish types
-- Click → neighborhood highlight + detail panel
-- Search filters nodes and their neighbors
-- Findings view shows a card grid sorted by severity
+The panel is a native Web Component (`HTMLElement` + Shadow DOM), served as a **static ES-module directory** - `panel.py` registers `/entitymap_frontend/` via `StaticPathConfig`, and the sidebar panel's `module_url` points at `entitymap-panel.js`. The code is split into focused modules composed as mixins:
 
-D3.js is loaded from CDN on first panel load to keep the integration package small.
+- `entitymap-panel.js` - core element: lifecycle, data loading, render/event wiring
+- `layout.js` - shell markup, filter chips, legend
+- `graph-view.js` / `graph-render.js` / `graph-interactions.js` - graph orchestration, D3 drawing primitives, and interactions (focus, path, scope filter, export, banner)
+- `hierarchy-view.js` / `hierarchy-tree.js` - hierarchy list and D3 tree
+- `findings-view.js`, `detail-view.js` - issues grid and detail drawer
+- `constants.js` (config + palettes), `graph-data.js` (pure helpers: degree, domain, shortest path), `styles.js` (CSS)
+
+Capabilities: D3 force layout, SVG rendering, node size by degree, curved parallel edges, type/area/domain filters, search highlighting, focus (neighborhood isolation) and shortest-path highlighting, minimap, zoom controls, PNG export, dark mode, a colorblind-safe palette, a compact density mode, keyboard navigation, and a screen-reader live region. Tunable layout values live in `constants.js` (`GRAPH`). D3.js is loaded from CDN on first panel load to keep the integration package small.
 
 ## Resource Usage
 

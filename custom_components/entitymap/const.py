@@ -21,8 +21,15 @@ DEFAULT_SCAN_INTERVAL_HOURS: Final = 6
 DEFAULT_INCLUDE_TEMPLATES: Final = True
 DEFAULT_INCLUDE_GROUPS: Final = True
 
+# Collapse bursts of registry changes into a single rescan (seconds).
+REGISTRY_REFRESH_COOLDOWN_SECONDS: Final = 15.0
+
+# ── Scan status ─────────────────────────────────────────────────────
+SCAN_STATUS_NEVER: Final = "never"
+SCAN_STATUS_OK: Final = "ok"
+SCAN_STATUS_ERRORS: Final = "errors"
+
 # ── Panel ───────────────────────────────────────────────────────────
-PANEL_URL: Final = "/entitymap"
 PANEL_TITLE: Final = "EntityMap"
 PANEL_ICON: Final = "mdi:graph-outline"
 
@@ -30,6 +37,7 @@ PANEL_ICON: Final = "mdi:graph-outline"
 SERVICE_SCAN: Final = "scan"
 SERVICE_ANALYZE_IMPACT: Final = "analyze_impact"
 SERVICE_GET_DEPENDENCIES: Final = "get_dependencies"
+SERVICE_EXPORT: Final = "export"
 
 # ── Events ──────────────────────────────────────────────────────────
 EVENT_GRAPH_UPDATED: Final = f"{DOMAIN}_graph_updated"

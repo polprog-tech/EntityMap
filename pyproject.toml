@@ -1,6 +1,6 @@
 [project]
 name = "entitymap"
-version = "1.0.1"
+version = "1.1.0"
 description = "Home Assistant dependency mapping and impact analysis integration"
 readme = "README.md"
 license = { text = "MIT" }

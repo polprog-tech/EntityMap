@@ -53,6 +53,10 @@
       "name": "Scan dependencies",
       "description": "Perform a full dependency scan of your Home Assistant configuration."
     },
+    "export": {
+      "name": "Export graph",
+      "description": "Return the full dependency graph, fragility findings, and last scan metadata as a response."
+    },
     "analyze_impact": {
       "name": "Analyze impact",
       "description": "Analyze the impact of removing, disabling, or replacing a specific node.",
@@ -81,13 +85,13 @@
   "entity": {
     "sensor": {
       "total_nodes": {
-        "name": "Total nodes"
+        "name": "Nodes"
       },
       "total_edges": {
-        "name": "Total edges"
+        "name": "Dependencies"
       },
       "fragility_issues": {
-        "name": "Fragility issues"
+        "name": "Issues"
       },
       "last_scan": {
         "name": "Last scan"

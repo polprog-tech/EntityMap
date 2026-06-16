@@ -98,14 +98,18 @@ Ready-made Lovelace cards - status tiles, gauges, history graphs, and a rescan b
 
 ## Key Features
 
-- **Interactive dependency graph** - Zoomable, draggable force-directed visualization with color-coded node types
+- **Interactive dependency graph** - Zoomable, draggable force-directed visualization; nodes are sized by importance and coded by color and shape
+- **Focus, search & path-finding** - Isolate a node's neighborhood, highlight search matches, and trace the dependency path between any two nodes
+- **Filters** - By node type (chips or the clickable legend), and by area or domain
 - **Hierarchy view** - Area → Device → Entity tree with list and visual D3 tree modes (horizontal & vertical)
 - **Impact analysis** - Select any node to see exactly what breaks if you remove, disable, or replace it
 - **Fragility detection** - Automatically find device_id references, missing entities, stale references, tight coupling
 - **Migration guidance** - Step-by-step recommendations for safely replacing devices or entities
 - **Repair issues** - Actionable warnings surfaced in Home Assistant's Repairs dashboard
-- **Three services** - `entitymap.scan`, `entitymap.analyze_impact`, `entitymap.get_dependencies`
-- **Summary sensors** - Total nodes, total dependencies, fragility issue count, last scan time
+- **Accessible & themable** - Keyboard navigation, screen-reader announcements, dark mode, a colorblind-safe palette, and a compact density mode
+- **Minimap, zoom controls & PNG export** - Navigate large graphs and export the current view as an image
+- **Services** - `entitymap.scan`, `entitymap.export`, `entitymap.analyze_impact`, `entitymap.get_dependencies`
+- **Summary sensors** - Node count, dependency count, fragility issue count, last scan time (with scan status, duration, and error attributes)
 - **WebSocket API** - Full programmatic access for custom dashboards and automations
 - **Fully async** - No blocking I/O; uses async adapters for all registry and config access
 - **Zero external dependencies** - Uses only libraries bundled with Home Assistant
@@ -222,11 +226,19 @@ EntityMap adds a panel to your Home Assistant sidebar. Here's what you can do:
 
 ### Graph View (default)
 
-- **Pan and zoom** - Scroll to zoom, drag the background to pan
+- **Pan and zoom** - Scroll to zoom, or use the on-canvas **+ / − / ⤢ fit / ⟲ reset** buttons; drag the background to pan
+- **Minimap** - Corner overview showing the whole graph and your current viewport
 - **Drag nodes** - Click and drag any node to rearrange the layout
+- **Node size** - Larger nodes have more dependencies (higher importance)
 - **Click a node** - Opens the detail panel with impact analysis, fragility findings, and migration guidance
-- **Filter by type** - Use the chips at the top to show/hide specific node types (devices, entities, automations, etc.)
-- **Search** - Type in the search box to filter nodes by name or ID; neighbors of matched nodes are shown too
+- **Double-click a node** - Focus mode: isolate that node and its immediate neighbors (Esc or "Clear" to exit)
+- **Filter by type** - Use the chips, or click items in the legend (it doubles as a filter)
+- **Filter by area or domain** - Narrow the graph with the scope dropdown
+- **Search** - Filter nodes by name or ID (neighbors of matches are kept); matches get a highlight ring
+- **🔗 Path** - Toggle path mode, then click two nodes to highlight the dependency chain between them
+- **⬇ PNG** - Download the current graph view as an image
+- **Display toggles** - Compact density (⇕) and colorblind-safe palette (◑) in the header; both are remembered
+- **Performance** - Very large graphs hide labels automatically to stay smooth
 
 ### Issues View
 
@@ -259,10 +271,12 @@ EntityMap creates a single device called **EntityMap** with the following entiti
 
 | Entity | Type | What it shows |
 |--------|------|---------------|
-| **Total nodes** | Sensor | Number of nodes in the dependency graph (devices, entities, automations, etc.) |
-| **Total edges** | Sensor | Number of dependency relationships discovered |
-| **Fragility issues** | Sensor | Number of fragility findings across the entire graph. 0 = clean |
-| **Last scan** | Sensor | Timestamp of the most recent completed scan |
+| **Nodes** | Sensor | Number of nodes in the dependency graph (devices, entities, automations, etc.) |
+| **Dependencies** | Sensor | Number of dependency relationships discovered |
+| **Issues** | Sensor | Number of fragility findings across the entire graph. 0 = clean |
+| **Last scan** | Sensor | Timestamp of the most recent completed scan. Attributes: `status`, `duration_seconds`, `adapter_errors` |
+
+Entities are shown in Home Assistant as `EntityMap Nodes`, `EntityMap Dependencies`, etc. (the `EntityMap` prefix is the device name). In dashboard cards you can drop the prefix with a per-entity `name:` (the bundled cards already do this).
 
 ### Actions
 
@@ -293,6 +307,16 @@ Trigger a full dependency scan. Returns node and edge counts.
 ```yaml
 service: entitymap.scan
 ```
+
+### `entitymap.export`
+
+Return the full dependency graph, fragility findings, and last-scan metadata as a service response (useful for templates, scripts, or backups).
+
+```yaml
+service: entitymap.export
+```
+
+Returns: `nodes`, `edges`, `node_count`, `edge_count`, `findings`, `last_scan`, `scan_status`.
 
 ### `entitymap.analyze_impact`
 

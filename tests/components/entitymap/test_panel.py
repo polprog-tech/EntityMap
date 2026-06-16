@@ -1,18 +1,24 @@
 """Tests for the EntityMap custom panel serving.
 
-Scenarios cover the panel JS view (auth, URL, served content) and the
-sidebar panel registration, with a regression guard where the
-panel could not load because the view required authentication.
+The panel is a multi-file ES module served from a static directory. These
+scenarios guard that the module exists, that the frontend directory is
+registered as a static path, and that the sidebar panel points at the served
+module (regression for issue #1, where the panel could not load).
 """
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
 from custom_components.entitymap import _async_register_panel
-from custom_components.entitymap.panel import EntityMapPanelView
+from custom_components.entitymap.panel import (
+    FRONTEND_DIR,
+    PANEL_MODULE_URL,
+    PANEL_URL_BASE,
+    async_register_frontend,
+)
 
 
 async def _register_and_capture() -> dict:
@@ -28,47 +34,49 @@ async def _register_and_capture() -> dict:
     return captured
 
 
-class TestPanelView:
-    """Scenarios for the view that serves the panel JavaScript module."""
+class TestFrontendAssets:
+    """Scenarios for the served frontend module."""
 
-    def test_view_does_not_require_auth(self):
-        """GIVEN the panel view served to the browser module loader.
+    def test_panel_module_exists_in_frontend_dir(self):
+        """GIVEN the static frontend directory.
 
-        WHEN its auth requirement is inspected.
+        WHEN it is inspected.
 
-        THEN it must not require auth, because module imports carry no token
-        (regression for issue #1: "Unable to load custom panel ...").
+        THEN it contains the panel module the sidebar points at.
         """
-        assert EntityMapPanelView.requires_auth is False
+        assert (FRONTEND_DIR / "entitymap-panel.js").is_file()
+
+    def test_module_url_is_under_the_static_base(self):
+        """GIVEN the advertised module URL.
+
+        WHEN it is compared to the static base.
+
+        THEN it is served from that base as a .js module.
+        """
+        assert PANEL_MODULE_URL.startswith(f"{PANEL_URL_BASE}/")
+        assert PANEL_MODULE_URL.endswith(".js")
+
+
+class TestStaticRegistration:
+    """Scenarios for registering the frontend static path."""
 
     @pytest.mark.asyncio
-    async def test_view_url_matches_registered_module_url(self):
-        """GIVEN the view URL and the module_url advertised to the frontend.
+    async def test_registers_frontend_directory(self):
+        """GIVEN a Home Assistant instance.
 
-        WHEN they are compared.
+        WHEN the frontend is registered.
 
-        THEN they match, so the frontend requests the path the view serves.
+        THEN the frontend directory is served at the panel base path.
         """
-        captured = await _register_and_capture()
+        hass = MagicMock()
+        hass.http.async_register_static_paths = AsyncMock()
 
-        module_url = captured["config"]["_panel_custom"]["module_url"]
-        assert module_url == EntityMapPanelView.url
+        await async_register_frontend(hass)
 
-    @pytest.mark.asyncio
-    async def test_get_serves_javascript(self):
-        """GIVEN a request for the panel module.
-
-        WHEN the view handles it.
-
-        THEN it returns the JS file as application/javascript with no caching.
-        """
-        view = EntityMapPanelView()
-
-        response = await view.get(MagicMock())
-
-        assert response.content_type == "application/javascript"
-        assert response.headers["Cache-Control"] == "no-cache"
-        assert response.body, "panel JS body should not be empty"
+        configs = hass.http.async_register_static_paths.call_args.args[0]
+        assert len(configs) == 1
+        assert configs[0].url_path == PANEL_URL_BASE
+        assert configs[0].path == str(FRONTEND_DIR)
 
 
 class TestPanelRegistration:
@@ -80,7 +88,7 @@ class TestPanelRegistration:
 
         WHEN the panel is registered.
 
-        THEN it is a non-admin custom panel that loads without an iframe.
+        THEN it is a non-admin custom panel pointing at the served module.
         """
         captured = await _register_and_capture()
 
@@ -88,3 +96,4 @@ class TestPanelRegistration:
         assert captured["frontend_url_path"] == "entitymap"
         assert captured["require_admin"] is False
         assert captured["config"]["_panel_custom"]["embed_iframe"] is False
+        assert captured["config"]["_panel_custom"]["module_url"] == PANEL_MODULE_URL

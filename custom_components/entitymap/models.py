@@ -178,12 +178,17 @@ class DependencyGraph:
         """Get all nodes that transitively depend on the given node."""
         visited: set[str] = set()
         stack = [node_id]
+
         while stack:
             current = stack.pop()
+
             for dep in self.get_dependents(current):
-                if dep not in visited:
-                    visited.add(dep)
-                    stack.append(dep)
+                if dep in visited:
+                    continue
+
+                visited.add(dep)
+                stack.append(dep)
+
         return visited
 
     def get_neighborhood(self, node_id: str, depth: int = 1) -> tuple[set[str], list[GraphEdge]]:
@@ -194,20 +199,49 @@ class DependencyGraph:
         frontier = {node_id}
 
         for _ in range(depth):
-            next_frontier: set[str] = set()
-            for nid in frontier:
-                for edge in self.get_inbound(nid) + self.get_outbound(nid):
-                    key = (edge.source, edge.target, edge.dependency_kind)
-                    if key not in edge_set:
-                        edge_set.add(key)
-                        result_edges.append(edge)
-                    other = edge.source if edge.target == nid else edge.target
-                    if other not in visited:
-                        visited.add(other)
-                        next_frontier.add(other)
-            frontier = next_frontier
+            frontier = self._expand_frontier(frontier, visited, edge_set, result_edges)
 
         return visited, result_edges
+
+    def _expand_frontier(
+        self,
+        frontier: set[str],
+        visited: set[str],
+        edge_set: set[tuple[str, str, str]],
+        result_edges: list[GraphEdge],
+    ) -> set[str]:
+        """Visit one ring of neighbors and return the next frontier."""
+        next_frontier: set[str] = set()
+
+        for nid in frontier:
+            next_frontier |= self._expand_node(nid, visited, edge_set, result_edges)
+
+        return next_frontier
+
+    def _expand_node(
+        self,
+        nid: str,
+        visited: set[str],
+        edge_set: set[tuple[str, str, str]],
+        result_edges: list[GraphEdge],
+    ) -> set[str]:
+        """Record edges touching nid and return its newly-discovered neighbors."""
+        new_neighbors: set[str] = set()
+
+        for edge in self.get_inbound(nid) + self.get_outbound(nid):
+            key = (edge.source, edge.target, edge.dependency_kind)
+
+            if key not in edge_set:
+                edge_set.add(key)
+                result_edges.append(edge)
+
+            other = edge.source if edge.target == nid else edge.target
+
+            if other not in visited:
+                visited.add(other)
+                new_neighbors.add(other)
+
+        return new_neighbors
 
     def clear(self) -> None:
         """Clear the entire graph."""

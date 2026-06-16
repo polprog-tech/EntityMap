@@ -2,6 +2,10 @@ scan:
   name: Scan dependencies
   description: Perform a full dependency scan of your Home Assistant configuration.
 
+export:
+  name: Export graph
+  description: Return the full dependency graph, fragility findings, and last scan metadata as a response.
+
 analyze_impact:
   name: Analyze impact
   description: Analyze the impact of removing, disabling, or replacing a specific node.

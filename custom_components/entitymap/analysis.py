@@ -12,6 +12,19 @@ from .models import (
     MigrationSuggestion,
 )
 
+MAX_RISK_SCORE = 100.0
+DIRECT_DEPENDENT_POINTS = 10
+DIRECT_DEPENDENT_CAP = 40
+TRANSITIVE_DEPENDENT_POINTS = 3
+TRANSITIVE_DEPENDENT_CAP = 30
+HIGH_VALUE_DEPENDENT_POINTS = 5
+DEVICE_REFERENCE_POINTS = 5
+DEVICE_REFERENCE_CAP = 20
+
+RISK_CRITICAL = 70
+RISK_HIGH = 50
+RISK_MEDIUM = 25
+
 
 def analyze_impact(graph: DependencyGraph, node_id: str) -> ImpactReport:
     """Analyze the impact of removing/disabling a node."""
@@ -78,38 +91,41 @@ def _calculate_risk_score(
     score = 0.0
 
     # Direct dependents contribute more
-    score += min(len(direct_deps) * 10, 40)
+    score += min(len(direct_deps) * DIRECT_DEPENDENT_POINTS, DIRECT_DEPENDENT_CAP)
 
     # Transitive dependents
-    score += min(len(transitive_deps) * 3, 30)
+    score += min(len(transitive_deps) * TRANSITIVE_DEPENDENT_POINTS, TRANSITIVE_DEPENDENT_CAP)
 
     # High-value dependents (automations, scripts) add more risk
-    for dep_id in direct_deps:
-        dep_node = graph.nodes.get(dep_id)
-        if dep_node and dep_node.node_type in (
-            NodeType.AUTOMATION,
-            NodeType.SCRIPT,
-        ):
-            score += 5
+    score += HIGH_VALUE_DEPENDENT_POINTS * sum(
+        1
+        for dep_id in direct_deps
+        if (dep_node := graph.nodes.get(dep_id))
+        and dep_node.node_type in (NodeType.AUTOMATION, NodeType.SCRIPT)
+    )
 
     # Device ID references (fragile)
     inbound = graph.get_inbound(node_id)
     device_trigger_count = sum(1 for e in inbound if "device" in e.dependency_kind.value)
-    score += min(device_trigger_count * 5, 20)
+    score += min(device_trigger_count * DEVICE_REFERENCE_POINTS, DEVICE_REFERENCE_CAP)
 
-    return min(score, 100.0)
+    return min(score, MAX_RISK_SCORE)
 
 
 def _risk_to_severity(risk_score: float) -> Severity:
     """Convert risk score to severity level."""
-    if risk_score >= 70:
+    if risk_score >= RISK_CRITICAL:
         return Severity.CRITICAL
-    if risk_score >= 50:
+
+    if risk_score >= RISK_HIGH:
         return Severity.HIGH
-    if risk_score >= 25:
+
+    if risk_score >= RISK_MEDIUM:
         return Severity.MEDIUM
+
     if risk_score > 0:
         return Severity.LOW
+
     return Severity.INFO
 
 
@@ -130,72 +146,101 @@ def _get_migration_suggestions(
     """Generate migration suggestions for a node."""
     from .models import GraphNode
 
-    suggestions: list[MigrationSuggestion] = []
     if not isinstance(node, GraphNode):
-        return suggestions
+        return []
 
     inbound = graph.get_inbound(node_id)
+    suggestions: list[MigrationSuggestion] = []
 
-    # Check for device_id-based references
+    device_suggestion = _suggest_device_id_references(inbound)
+
+    if device_suggestion:
+        suggestions.append(device_suggestion)
+
+    automation_suggestion = _suggest_affected_automations(graph, inbound)
+
+    if automation_suggestion:
+        suggestions.append(automation_suggestion)
+
+    device_entity_suggestion = _suggest_device_entity_migration(graph, node_id, node)
+
+    if device_entity_suggestion:
+        suggestions.append(device_entity_suggestion)
+
+    return suggestions
+
+
+def _suggest_device_id_references(inbound: list) -> MigrationSuggestion | None:
+    """Flag fragile device_id-based references that break on re-pairing."""
     device_refs = [e for e in inbound if "device" in e.dependency_kind.value]
-    if device_refs:
-        affected = tuple(e.source for e in device_refs)
-        suggestions.append(
-            MigrationSuggestion(
-                description=(
-                    f"This node has {len(device_refs)} device_id-based reference(s). "
-                    "These will break if the device is re-paired."
-                ),
-                affected_items=affected,
-                recommendation=(
-                    "Where possible, switch automations to use entity-based "
-                    "triggers and conditions instead of device_id references."
-                ),
-            )
-        )
 
-    # Suggest reviewing affected automations
+    if not device_refs:
+        return None
+
+    return MigrationSuggestion(
+        description=(
+            f"This node has {len(device_refs)} device_id-based reference(s). "
+            "These will break if the device is re-paired."
+        ),
+        affected_items=tuple(e.source for e in device_refs),
+        recommendation=(
+            "Where possible, switch automations to use entity-based "
+            "triggers and conditions instead of device_id references."
+        ),
+    )
+
+
+def _suggest_affected_automations(
+    graph: DependencyGraph, inbound: list
+) -> MigrationSuggestion | None:
+    """Recommend reviewing automations that reference this node."""
     auto_deps = [
         e.source
         for e in inbound
         if graph.nodes.get(e.source) and graph.nodes[e.source].node_type == NodeType.AUTOMATION
     ]
-    if auto_deps:
-        suggestions.append(
-            MigrationSuggestion(
-                description=(
-                    f"{len(auto_deps)} automation(s) reference this node. "
-                    "Review each before making changes."
-                ),
-                affected_items=tuple(auto_deps),
-                recommendation=(
-                    "Open each automation and update entity_id references "
-                    "to point to the replacement entity."
-                ),
-            )
-        )
 
-    if node.node_type == NodeType.DEVICE:
-        # Suggest entity-level migration
-        device_entities = [
-            e.source
-            for e in graph.get_inbound(node_id)
-            if graph.nodes.get(e.source) and graph.nodes[e.source].node_type == NodeType.ENTITY
-        ]
-        if device_entities:
-            suggestions.append(
-                MigrationSuggestion(
-                    description=(
-                        f"This device provides {len(device_entities)} entities. "
-                        "After replacing the device, map old entities to new ones."
-                    ),
-                    affected_items=tuple(device_entities),
-                    recommendation=(
-                        "Note down all entity IDs before removing the device. "
-                        "After adding the replacement, use HA's entity ID "
-                        "customization to restore the original entity IDs."
-                    ),
-                )
-            )
+    if not auto_deps:
+        return None
 
-    return suggestions
+    return MigrationSuggestion(
+        description=(
+            f"{len(auto_deps)} automation(s) reference this node. "
+            "Review each before making changes."
+        ),
+        affected_items=tuple(auto_deps),
+        recommendation=(
+            "Open each automation and update entity_id references "
+            "to point to the replacement entity."
+        ),
+    )
+
+
+def _suggest_device_entity_migration(
+    graph: DependencyGraph, node_id: str, node
+) -> MigrationSuggestion | None:
+    """For devices, map their provided entities before replacement."""
+    if node.node_type != NodeType.DEVICE:
+        return None
+
+    device_entities = [
+        e.source
+        for e in graph.get_inbound(node_id)
+        if graph.nodes.get(e.source) and graph.nodes[e.source].node_type == NodeType.ENTITY
+    ]
+
+    if not device_entities:
+        return None
+
+    return MigrationSuggestion(
+        description=(
+            f"This device provides {len(device_entities)} entities. "
+            "After replacing the device, map old entities to new ones."
+        ),
+        affected_items=tuple(device_entities),
+        recommendation=(
+            "Note down all entity IDs before removing the device. "
+            "After adding the replacement, use HA's entity ID "
+            "customization to restore the original entity IDs."
+        ),
+    )

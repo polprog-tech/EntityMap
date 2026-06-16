@@ -53,6 +53,10 @@
       "name": "Skanuj zależności",
       "description": "Wykonaj pełne skanowanie zależności konfiguracji Home Assistant."
     },
+    "export": {
+      "name": "Eksportuj graf",
+      "description": "Zwróć pełny graf zależności, wykryte problemy kruchości oraz metadane ostatniego skanowania jako odpowiedź."
+    },
     "analyze_impact": {
       "name": "Analizuj wpływ",
       "description": "Analizuj wpływ usunięcia, wyłączenia lub zastąpienia określonego węzła.",
@@ -81,16 +85,16 @@
   "entity": {
     "sensor": {
       "total_nodes": {
-        "name": "Łączna liczba węzłów"
+        "name": "Węzły"
       },
       "total_edges": {
-        "name": "Łączna liczba krawędzi"
+        "name": "Zależności"
       },
       "fragility_issues": {
-        "name": "Problemy kruchości"
+        "name": "Problemy"
       },
       "last_scan": {
-        "name": "Ostatnie skanowanie"
+        "name": "Ostatni skan"
       }
     },
     "button": {

@@ -45,11 +45,19 @@ class RegistryAdapter(SourceAdapter):
 
     async def async_populate(self, graph: DependencyGraph) -> None:
         """Populate graph with registry data."""
-        area_reg = ar.async_get(self.hass)
-        device_reg = dr.async_get(self.hass)
-        entity_reg = er.async_get(self.hass)
+        self._populate_areas(graph, ar.async_get(self.hass))
+        self._populate_devices(graph, dr.async_get(self.hass))
+        self._populate_entities(graph, er.async_get(self.hass))
 
-        # Areas
+        _LOGGER.debug(
+            "RegistryAdapter populated %d nodes and %d edges",
+            graph.node_count,
+            graph.edge_count,
+        )
+
+    @staticmethod
+    def _populate_areas(graph: DependencyGraph, area_reg: ar.AreaRegistry) -> None:
+        """Add a node for each registered area."""
         for area in area_reg.async_list_areas():
             graph.add_node(
                 GraphNode(
@@ -60,7 +68,9 @@ class RegistryAdapter(SourceAdapter):
                 )
             )
 
-        # Devices
+    @staticmethod
+    def _populate_devices(graph: DependencyGraph, device_reg: dr.DeviceRegistry) -> None:
+        """Add a node per device and an edge to its area."""
         for device in device_reg.devices.values():
             device_node_id = f"device.{device.id}"
             graph.add_node(
@@ -79,32 +89,30 @@ class RegistryAdapter(SourceAdapter):
                 )
             )
 
-            # Device → Area edge
-            if device.area_id:
-                area_node_id = f"area.{device.area_id}"
-                graph.add_edge(
-                    GraphEdge(
-                        source=device_node_id,
-                        target=area_node_id,
-                        dependency_kind=DependencyKind.DEVICE_IN_AREA,
-                        confidence=Confidence.HIGH,
-                        source_of_truth="device_registry",
-                    )
-                )
+            if not device.area_id:
+                continue
 
-        # Entities
+            graph.add_edge(
+                GraphEdge(
+                    source=device_node_id,
+                    target=f"area.{device.area_id}",
+                    dependency_kind=DependencyKind.DEVICE_IN_AREA,
+                    confidence=Confidence.HIGH,
+                    source_of_truth="device_registry",
+                )
+            )
+
+    def _populate_entities(self, graph: DependencyGraph, entity_reg: er.EntityRegistry) -> None:
+        """Add a node per entity and an edge to its device."""
         for entry in entity_reg.entities.values():
             domain = entry.entity_id.split(".")[0]
-            node_type = self._classify_entity(domain, entry)
             state = self.hass.states.get(entry.entity_id)
-            available = True
-            if state is not None:
-                available = state.state != "unavailable"
+            available = state is None or state.state != "unavailable"
 
             graph.add_node(
                 GraphNode(
                     node_id=entry.entity_id,
-                    node_type=node_type,
+                    node_type=self._classify_entity(domain, entry),
                     title=(entry.name or entry.original_name or entry.entity_id),
                     entity_id=entry.entity_id,
                     device_id=entry.device_id,
@@ -114,24 +122,18 @@ class RegistryAdapter(SourceAdapter):
                 )
             )
 
-            # Entity → Device edge
-            if entry.device_id:
-                device_node_id = f"device.{entry.device_id}"
-                graph.add_edge(
-                    GraphEdge(
-                        source=entry.entity_id,
-                        target=device_node_id,
-                        dependency_kind=DependencyKind.ENTITY_OF_DEVICE,
-                        confidence=Confidence.HIGH,
-                        source_of_truth="entity_registry",
-                    )
-                )
+            if not entry.device_id:
+                continue
 
-        _LOGGER.debug(
-            "RegistryAdapter populated %d nodes and %d edges",
-            graph.node_count,
-            graph.edge_count,
-        )
+            graph.add_edge(
+                GraphEdge(
+                    source=entry.entity_id,
+                    target=f"device.{entry.device_id}",
+                    dependency_kind=DependencyKind.ENTITY_OF_DEVICE,
+                    confidence=Confidence.HIGH,
+                    source_of_truth="entity_registry",
+                )
+            )
 
     @staticmethod
     def _classify_entity(domain: str, entry: er.RegistryEntry) -> NodeType:

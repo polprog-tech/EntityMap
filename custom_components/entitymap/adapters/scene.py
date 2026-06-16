@@ -52,56 +52,46 @@ class SceneAdapter(SourceAdapter):
                 )
             )
 
-        # Scene entities (the states to be set)
+        # Scene entities can be given as an {entity_id: state} dict or a list
         entities = config.get("entities", {})
+
         if isinstance(entities, dict):
             for member_entity_id in entities:
-                if not isinstance(member_entity_id, str) or "." not in member_entity_id:
-                    continue
-                if member_entity_id not in graph.nodes:
-                    graph.add_node(
-                        GraphNode(
-                            node_id=member_entity_id,
-                            node_type=NodeType.ENTITY,
-                            title=member_entity_id,
-                            entity_id=member_entity_id,
-                            available=False,
-                        )
-                    )
-                graph.add_edge(
-                    GraphEdge(
-                        source=scene_entity_id,
-                        target=member_entity_id,
-                        dependency_kind=DependencyKind.SCENE_MEMBER,
-                        confidence=Confidence.HIGH,
-                        source_of_truth="scene_config",
-                    )
-                )
+                self._add_scene_member(graph, scene_entity_id, member_entity_id)
 
-        # Also check entity_id list format
         entity_ids = config.get("entity_id", [])
+
         if isinstance(entity_ids, list):
             for member_id in entity_ids:
-                if isinstance(member_id, str) and "." in member_id:
-                    if member_id not in graph.nodes:
-                        graph.add_node(
-                            GraphNode(
-                                node_id=member_id,
-                                node_type=NodeType.ENTITY,
-                                title=member_id,
-                                entity_id=member_id,
-                                available=False,
-                            )
-                        )
-                    graph.add_edge(
-                        GraphEdge(
-                            source=scene_entity_id,
-                            target=member_id,
-                            dependency_kind=DependencyKind.SCENE_MEMBER,
-                            confidence=Confidence.HIGH,
-                            source_of_truth="scene_config",
-                        )
-                    )
+                self._add_scene_member(graph, scene_entity_id, member_id)
+
+    def _add_scene_member(
+        self, graph: DependencyGraph, scene_entity_id: str, member_id: Any
+    ) -> None:
+        """Link a scene to one of its member entities."""
+        if not isinstance(member_id, str) or "." not in member_id:
+            return
+
+        if member_id not in graph.nodes:
+            graph.add_node(
+                GraphNode(
+                    node_id=member_id,
+                    node_type=NodeType.ENTITY,
+                    title=member_id,
+                    entity_id=member_id,
+                    available=False,
+                )
+            )
+
+        graph.add_edge(
+            GraphEdge(
+                source=scene_entity_id,
+                target=member_id,
+                dependency_kind=DependencyKind.SCENE_MEMBER,
+                confidence=Confidence.HIGH,
+                source_of_truth="scene_config",
+            )
+        )
 
 
 def _get_scene_store(hass: HomeAssistant) -> list[dict[str, Any]] | None:

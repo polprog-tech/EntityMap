@@ -7,11 +7,11 @@ from dataclasses import dataclass
 from datetime import timedelta
 from typing import Any
 
-import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import EVENT_HOMEASSISTANT_STARTED
 from homeassistant.core import Event, HomeAssistant, callback
+from homeassistant.helpers.debounce import Debouncer
 from homeassistant.helpers.event import async_track_time_interval
+from homeassistant.helpers.start import async_at_started
 
 from .const import (
     CONF_AUTO_REFRESH,
@@ -23,6 +23,7 @@ from .const import (
     DOMAIN,
     PANEL_ICON,
     PANEL_TITLE,
+    REGISTRY_REFRESH_COOLDOWN_SECONDS,
 )
 from .graph import GraphBuilder
 
@@ -46,8 +47,9 @@ type EntityMapConfigEntry = ConfigEntry[EntityMapRuntimeData]
 
 async def async_setup_entry(hass: HomeAssistant, entry: EntityMapConfigEntry) -> bool:
     """Set up EntityMap from a config entry."""
-    from .panel import EntityMapPanelView
+    from .panel import async_register_frontend
     from .services import async_register_services
+    from .websocket import async_register_websocket_commands
 
     builder = GraphBuilder(hass, entry)
     unsub_listeners: list[Any] = []
@@ -62,15 +64,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: EntityMapConfigEntry) ->
     await async_register_services(hass, builder)
 
     # Register WebSocket commands (idempotent)
-    _register_websocket_commands(hass)
+    async_register_websocket_commands(hass)
 
-    # Register the panel JS serving endpoint (once per HA session)
+    # Serve the panel's frontend assets (once per HA session)
     if DATA_VIEW_REGISTERED not in hass.data:
         try:
-            hass.http.register_view(EntityMapPanelView())
+            await async_register_frontend(hass)
             hass.data[DATA_VIEW_REGISTERED] = True
         except Exception:  # noqa: BLE001
-            _LOGGER.debug("EntityMap panel view already registered")
+            _LOGGER.debug("EntityMap frontend already registered")
 
     # Register the frontend sidebar panel (idempotent - overwrites if exists)
     try:
@@ -81,36 +83,73 @@ async def async_setup_entry(hass: HomeAssistant, entry: EntityMapConfigEntry) ->
     # Set up entity platforms
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
-    # Schedule initial scan
-    options = entry.options
-    if options.get(CONF_SCAN_ON_STARTUP, DEFAULT_SCAN_ON_STARTUP):
+    _setup_startup_scan(hass, entry, builder, unsub_listeners)
+    _setup_auto_refresh(hass, entry, builder, unsub_listeners)
+    _setup_periodic_scan(hass, entry, builder, unsub_listeners)
 
-        async def _startup_scan(_event: Event) -> None:
-            """Run initial scan after HA is fully started."""
-            await builder.async_build()
-            # Create repair issues for critical findings
-            await _async_create_repair_issues(hass, builder)
+    # Listen for options updates
+    entry.async_on_unload(entry.add_update_listener(_async_update_options))
 
-        unsub_listeners.append(
-            hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STARTED, _startup_scan)
-        )
+    return True
 
-    # Auto-refresh on registry changes
-    if options.get(CONF_AUTO_REFRESH, DEFAULT_AUTO_REFRESH):
 
-        @callback
-        def _handle_registry_change(_event: Event) -> None:
-            """Schedule a rescan when registries change."""
-            hass.async_create_task(builder.async_build())
+def _setup_startup_scan(
+    hass: HomeAssistant,
+    entry: EntityMapConfigEntry,
+    builder: GraphBuilder,
+    unsub_listeners: list[Any],
+) -> None:
+    """Run the first scan immediately if HA is already running, otherwise on start."""
+    if not entry.options.get(CONF_SCAN_ON_STARTUP, DEFAULT_SCAN_ON_STARTUP):
+        return
 
-        for event_type in (
-            "entity_registry_updated",
-            "device_registry_updated",
-        ):
-            unsub_listeners.append(hass.bus.async_listen(event_type, _handle_registry_change))
+    async def _startup_scan(_hass: HomeAssistant) -> None:
+        """Run the initial scan once HA is ready."""
+        await builder.async_build()
+        await _async_create_repair_issues(hass, builder)
 
-    # Periodic reconciliation scan
-    scan_interval = options.get(CONF_SCAN_INTERVAL_HOURS, DEFAULT_SCAN_INTERVAL_HOURS)
+    unsub_listeners.append(async_at_started(hass, _startup_scan))
+
+
+def _setup_auto_refresh(
+    hass: HomeAssistant,
+    entry: EntityMapConfigEntry,
+    builder: GraphBuilder,
+    unsub_listeners: list[Any],
+) -> None:
+    """Debounce registry-change rescans so a burst collapses into one."""
+    if not entry.options.get(CONF_AUTO_REFRESH, DEFAULT_AUTO_REFRESH):
+        return
+
+    refresh_debouncer = Debouncer(
+        hass,
+        _LOGGER,
+        cooldown=REGISTRY_REFRESH_COOLDOWN_SECONDS,
+        immediate=False,
+        function=builder.async_build,
+    )
+    entry.async_on_unload(refresh_debouncer.async_shutdown)
+
+    @callback
+    def _handle_registry_change(_event: Event) -> None:
+        """Schedule a debounced rescan when registries change."""
+        hass.async_create_task(refresh_debouncer.async_call())
+
+    for event_type in (
+        "entity_registry_updated",
+        "device_registry_updated",
+    ):
+        unsub_listeners.append(hass.bus.async_listen(event_type, _handle_registry_change))
+
+
+def _setup_periodic_scan(
+    hass: HomeAssistant,
+    entry: EntityMapConfigEntry,
+    builder: GraphBuilder,
+    unsub_listeners: list[Any],
+) -> None:
+    """Schedule the periodic reconciliation scan."""
+    scan_interval = entry.options.get(CONF_SCAN_INTERVAL_HOURS, DEFAULT_SCAN_INTERVAL_HOURS)
 
     async def _periodic_scan(_now: Any) -> None:
         """Periodic reconciliation scan."""
@@ -123,11 +162,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: EntityMapConfigEntry) ->
             timedelta(hours=scan_interval),
         )
     )
-
-    # Listen for options updates
-    entry.async_on_unload(entry.add_update_listener(_async_update_options))
-
-    return True
 
 
 async def _async_update_options(hass: HomeAssistant, entry: EntityMapConfigEntry) -> None:
@@ -162,6 +196,8 @@ async def _async_register_panel(hass: HomeAssistant) -> None:
     """Register the EntityMap frontend panel."""
     from homeassistant.components import frontend
 
+    from .panel import PANEL_MODULE_URL
+
     frontend.async_register_built_in_panel(
         hass,
         component_name="custom",
@@ -173,7 +209,7 @@ async def _async_register_panel(hass: HomeAssistant) -> None:
                 "name": "entitymap-panel",
                 "embed_iframe": False,
                 "trust_external": False,
-                "module_url": "/api/panel_custom/entitymap",
+                "module_url": PANEL_MODULE_URL,
             }
         },
         require_admin=False,
@@ -185,9 +221,8 @@ async def _async_create_repair_issues(hass: HomeAssistant, builder: GraphBuilder
     from homeassistant.helpers import issue_registry as ir
 
     from .const import FragilityType
-    from .fragility import detect_fragility
 
-    findings = detect_fragility(builder.graph)
+    findings = builder.findings
 
     # Count device_id references
     device_id_count = sum(
@@ -220,278 +255,3 @@ async def _async_create_repair_issues(hass: HomeAssistant, builder: GraphBuilder
                 "source_name": finding.node_id,
             },
         )
-
-
-# ── WebSocket API ───────────────────────────────────────────────────
-
-_WS_REGISTERED = False
-
-
-def _register_websocket_commands(hass: HomeAssistant) -> None:
-    """Register WebSocket commands for the frontend panel."""
-    global _WS_REGISTERED  # noqa: PLW0603
-    if _WS_REGISTERED:
-        return
-    _WS_REGISTERED = True
-
-    from homeassistant.components import websocket_api
-
-    from .analysis import analyze_impact
-    from .fragility import detect_fragility
-
-    @websocket_api.websocket_command({vol.Required("type"): "entitymap/graph"})
-    @websocket_api.async_response
-    async def ws_get_graph(
-        hass: HomeAssistant,
-        connection: websocket_api.ActiveConnection,
-        msg: dict[str, Any],
-    ) -> None:
-        """Return the full graph data."""
-        builder = _get_builder(hass)
-        if not builder:
-            connection.send_error(msg["id"], "not_loaded", "EntityMap not loaded")
-            return
-        connection.send_result(msg["id"], builder.get_graph_data())
-
-    @websocket_api.websocket_command(
-        {
-            vol.Required("type"): "entitymap/impact",
-            vol.Required("node_id"): str,
-        }
-    )
-    @websocket_api.async_response
-    async def ws_get_impact(
-        hass: HomeAssistant,
-        connection: websocket_api.ActiveConnection,
-        msg: dict[str, Any],
-    ) -> None:
-        """Return impact analysis for a node."""
-        builder = _get_builder(hass)
-        if not builder:
-            connection.send_error(msg["id"], "not_loaded", "EntityMap not loaded")
-            return
-        report = analyze_impact(builder.graph, msg["node_id"])
-        connection.send_result(msg["id"], report.as_dict())
-
-    @websocket_api.websocket_command(
-        {
-            vol.Required("type"): "entitymap/neighborhood",
-            vol.Required("node_id"): str,
-            vol.Optional("depth", default=2): int,
-        }
-    )
-    @websocket_api.async_response
-    async def ws_get_neighborhood(
-        hass: HomeAssistant,
-        connection: websocket_api.ActiveConnection,
-        msg: dict[str, Any],
-    ) -> None:
-        """Return the neighborhood around a node."""
-        builder = _get_builder(hass)
-        if not builder:
-            connection.send_error(msg["id"], "not_loaded", "EntityMap not loaded")
-            return
-        graph = builder.graph
-        node_ids, edges = graph.get_neighborhood(msg["node_id"], msg.get("depth", 2))
-        nodes = [graph.nodes[nid].as_dict() for nid in node_ids if nid in graph.nodes]
-        connection.send_result(
-            msg["id"],
-            {"nodes": nodes, "edges": [e.as_dict() for e in edges]},
-        )
-
-    @websocket_api.websocket_command({vol.Required("type"): "entitymap/scan"})
-    @websocket_api.async_response
-    async def ws_scan(
-        hass: HomeAssistant,
-        connection: websocket_api.ActiveConnection,
-        msg: dict[str, Any],
-    ) -> None:
-        """Trigger a dependency scan."""
-        builder = _get_builder(hass)
-        if not builder:
-            connection.send_error(msg["id"], "not_loaded", "EntityMap not loaded")
-            return
-        graph = await builder.async_build()
-        connection.send_result(
-            msg["id"],
-            {"node_count": graph.node_count, "edge_count": graph.edge_count},
-        )
-
-    @websocket_api.websocket_command({vol.Required("type"): "entitymap/findings"})
-    @websocket_api.async_response
-    async def ws_get_findings(
-        hass: HomeAssistant,
-        connection: websocket_api.ActiveConnection,
-        msg: dict[str, Any],
-    ) -> None:
-        """Return fragility findings."""
-        builder = _get_builder(hass)
-        if not builder:
-            connection.send_error(msg["id"], "not_loaded", "EntityMap not loaded")
-            return
-        findings = detect_fragility(builder.graph)
-        connection.send_result(
-            msg["id"],
-            {"findings": [f.as_dict() for f in findings], "count": len(findings)},
-        )
-
-    @websocket_api.websocket_command(
-        {
-            vol.Required("type"): "entitymap/migration",
-            vol.Required("node_id"): str,
-            vol.Optional("target_node_id"): str,
-        }
-    )
-    @websocket_api.async_response
-    async def ws_get_migration(
-        hass: HomeAssistant,
-        connection: websocket_api.ActiveConnection,
-        msg: dict[str, Any],
-    ) -> None:
-        """Return migration suggestions for a node."""
-        from .migration import get_migration_report
-
-        builder = _get_builder(hass)
-        if not builder:
-            connection.send_error(msg["id"], "not_loaded", "EntityMap not loaded")
-            return
-        suggestions = get_migration_report(builder.graph, msg["node_id"], msg.get("target_node_id"))
-        connection.send_result(
-            msg["id"],
-            {"suggestions": [s.as_dict() for s in suggestions]},
-        )
-
-    @websocket_api.websocket_command({vol.Required("type"): "entitymap/hierarchy"})
-    @websocket_api.async_response
-    async def ws_get_hierarchy(
-        hass: HomeAssistant,
-        connection: websocket_api.ActiveConnection,
-        msg: dict[str, Any],
-    ) -> None:
-        """Return the area → device → entity hierarchy tree."""
-        builder = _get_builder(hass)
-        if not builder:
-            connection.send_error(msg["id"], "not_loaded", "EntityMap not loaded")
-            return
-        connection.send_result(msg["id"], _build_hierarchy(builder.graph))
-
-    websocket_api.async_register_command(hass, ws_get_graph)
-    websocket_api.async_register_command(hass, ws_get_impact)
-    websocket_api.async_register_command(hass, ws_get_neighborhood)
-    websocket_api.async_register_command(hass, ws_scan)
-    websocket_api.async_register_command(hass, ws_get_findings)
-    websocket_api.async_register_command(hass, ws_get_migration)
-    websocket_api.async_register_command(hass, ws_get_hierarchy)
-
-
-def _get_builder(hass: HomeAssistant) -> GraphBuilder | None:
-    """Get the GraphBuilder from the first config entry."""
-    entries = hass.config_entries.async_entries(DOMAIN)
-    if not entries:
-        return None
-    entry = entries[0]
-    if hasattr(entry, "runtime_data") and entry.runtime_data:
-        builder: GraphBuilder = entry.runtime_data.builder
-        return builder
-    return None
-
-
-def _build_hierarchy(graph: Any) -> dict[str, Any]:
-    """Build an area → device → entity hierarchy tree from the graph.
-
-    Returns a dict with:
-      areas: list of area objects, each containing devices and direct entities
-      unassigned_devices: devices without an area
-      unassigned_entities: entities without an area or device
-    """
-    from .const import NodeType
-
-    areas: dict[str, dict[str, Any]] = {}
-    devices: dict[str, dict[str, Any]] = {}
-    entities_by_area: dict[str, list[dict[str, Any]]] = {}
-    unassigned_devices: list[dict[str, Any]] = []
-    unassigned_entities: list[dict[str, Any]] = []
-
-    # Collect areas
-    for node in graph.nodes.values():
-        if node.node_type == NodeType.AREA:
-            areas[node.area_id or node.node_id.removeprefix("area.")] = {
-                "node_id": node.node_id,
-                "title": node.title,
-                "node_type": node.node_type.value,
-                "devices": [],
-                "entities": [],
-            }
-
-    # Collect devices, group by area
-    for node in graph.nodes.values():
-        if node.node_type == NodeType.DEVICE:
-            dev = {
-                "node_id": node.node_id,
-                "title": node.title,
-                "node_type": node.node_type.value,
-                "area_id": node.area_id,
-                "disabled": node.disabled,
-                "available": node.available,
-                "metadata": node.metadata,
-                "entities": [],
-            }
-            devices[node.device_id or node.node_id.removeprefix("device.")] = dev
-
-    # Collect entities, link to device or area
-    for node in graph.nodes.values():
-        if node.node_type in (
-            NodeType.ENTITY,
-            NodeType.AUTOMATION,
-            NodeType.SCRIPT,
-            NodeType.SCENE,
-            NodeType.HELPER,
-            NodeType.GROUP,
-        ):
-            ent = {
-                "node_id": node.node_id,
-                "title": node.title,
-                "node_type": node.node_type.value,
-                "entity_id": node.entity_id,
-                "device_id": node.device_id,
-                "area_id": node.area_id,
-                "disabled": node.disabled,
-                "available": node.available,
-            }
-            if node.device_id and node.device_id in devices:
-                devices[node.device_id]["entities"].append(ent)
-            elif node.area_id and node.area_id in areas:
-                entities_by_area.setdefault(node.area_id, []).append(ent)
-            else:
-                unassigned_entities.append(ent)
-
-    # Build final area tree
-    result_areas = []
-    for area_id, area in areas.items():
-        # Attach devices that belong to this area
-        for dev in devices.values():
-            if dev["area_id"] == area_id:
-                area["devices"].append(dev)
-        # Attach direct entities (not via device)
-        area["entities"] = entities_by_area.get(area_id, [])
-        # Counts
-        area["device_count"] = len(area["devices"])
-        area["entity_count"] = (
-            area["device_count"]
-            + len(area["entities"])
-            + sum(len(d["entities"]) for d in area["devices"])
-        )
-        result_areas.append(area)
-
-    # Unassigned devices (no area)
-    for dev in devices.values():
-        if not dev["area_id"] or dev["area_id"] not in areas:
-            unassigned_devices.append(dev)
-
-    result_areas.sort(key=lambda a: a["title"].lower())
-
-    return {
-        "areas": result_areas,
-        "unassigned_devices": unassigned_devices,
-        "unassigned_entities": unassigned_entities,
-    }

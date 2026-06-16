@@ -86,6 +86,45 @@ class TestGraphBuilderBuild:
         assert "entitymap_graph_updated" in event_names
 
 
+class TestGraphBuilderObservability:
+    """Scenarios for scan status tracking and the cached findings."""
+
+    @pytest.fixture
+    def builder(self, mock_hass, mock_config_entry):
+        return GraphBuilder(mock_hass, mock_config_entry)
+
+    """GIVEN a new builder."""
+    def test_initial_status_is_never(self, builder):
+
+        """THEN no scan has been recorded yet."""
+        assert builder.last_scan_status == "never"
+        assert builder.last_scan_duration is None
+        assert builder.adapter_error_count == 0
+        assert builder.findings == []
+
+    """GIVEN an empty builder."""
+    @pytest.mark.asyncio
+    async def test_build_records_status_and_caches_findings(self, builder):
+
+        """WHEN a build completes."""
+        with (
+            patch("custom_components.entitymap.adapters.registry.ar") as mock_ar,
+            patch("custom_components.entitymap.adapters.registry.dr") as mock_dr,
+            patch("custom_components.entitymap.adapters.registry.er") as mock_er,
+        ):
+            mock_ar.async_get.return_value.async_list_areas.return_value = []
+            mock_dr.async_get.return_value.devices = {}
+            mock_er.async_get.return_value.entities = {}
+
+            await builder.async_build()
+
+        """THEN duration and a terminal status are recorded and findings are cached."""
+        assert builder.last_scan_duration is not None
+        assert builder.last_scan_duration >= 0
+        assert builder.last_scan_status in ("ok", "errors")
+        assert isinstance(builder.findings, list)
+
+
 class TestGraphBuilderSerialization:
     """Scenarios for graph data export."""
 
@@ -119,3 +158,28 @@ class TestGraphBuilderSerialization:
         """THEN the serialized data includes those nodes."""
         assert data["node_count"] == 1
         assert data["nodes"][0]["node_id"] == "light.x"
+
+    """GIVEN a builder with nodes and findings (the export service backend)."""
+    def test_export_data_includes_findings_and_scan_metadata(self, builder):
+
+        from custom_components.entitymap.const import FragilityType, NodeType, Severity
+        from custom_components.entitymap.models import FragilityFinding, GraphNode
+
+        builder.graph.add_node(GraphNode("light.x", NodeType.ENTITY, "X"))
+        builder.findings = [
+            FragilityFinding(
+                finding_id="f1",
+                fragility_type=FragilityType.MISSING_ENTITY,
+                severity=Severity.HIGH,
+                node_id="light.x",
+            )
+        ]
+
+        """WHEN export_data is called."""
+        data = builder.export_data()
+
+        """THEN it carries the graph, the findings, and scan metadata."""
+        assert data["node_count"] == 1
+        assert len(data["findings"]) == 1
+        assert data["last_scan"] is None
+        assert data["scan_status"] == "never"
